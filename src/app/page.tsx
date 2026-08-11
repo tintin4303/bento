@@ -206,45 +206,36 @@ export default async function Dashboard() {
               {menuItems.map(item => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-2xl border border-pink-50 shadow-sm overflow-hidden hover:border-secondary/40 hover:shadow-md transition-all duration-200"
+                  className="bg-white rounded-2xl border border-pink-50 shadow-sm p-4 flex flex-col sm:flex-row gap-4 hover:border-secondary/40 hover:shadow-md transition-all duration-200"
                 >
-                  {/* Food image – full width banner if present */}
-                  {item.imageUrl && (
-                    <div className="relative h-44 w-full overflow-hidden">
-                      <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
-                      {/* Gradient overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                      {/* Favorite button overlay */}
-                      <div className="absolute top-3 right-3">
-                        <FavoriteButton menuItemId={item.id} isFavorite={item.isFavorite} />
-                      </div>
-                      {/* Category pill */}
-                      <span className="absolute bottom-3 left-3 text-[10px] font-bold px-2 py-1 bg-white/90 text-secondary rounded-full uppercase tracking-wide">
-                        {item.category}
-                      </span>
+                  {/* Image */}
+                  {item.imageUrl ? (
+                    <div className="relative w-full sm:w-28 h-32 sm:h-28 flex-shrink-0 rounded-xl overflow-hidden bg-pink-50">
+                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="relative w-full sm:w-28 h-32 sm:h-28 flex-shrink-0 rounded-xl bg-pink-50 flex items-center justify-center text-3xl">
+                      🍱
                     </div>
                   )}
 
-                  <div className="p-4">
-                    {!item.imageUrl && (
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-[10px] font-bold px-2 py-1 bg-pink-100 text-secondary rounded-full uppercase tracking-wide">
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 flex flex-col">
+                    <div className="flex justify-between items-start">
+                      <div className="pr-2">
+                        <h3 className="text-lg font-black text-gray-900 leading-tight">{item.name}</h3>
+                        <span className="text-[10px] font-bold px-2 py-0.5 bg-pink-100 text-secondary rounded-full uppercase tracking-wide inline-block mt-1">
                           {item.category}
                         </span>
-                        <FavoriteButton menuItemId={item.id} isFavorite={item.isFavorite} />
                       </div>
-                    )}
-
-                    <h3 className="text-lg font-black text-gray-900">{item.name}</h3>
+                      <FavoriteButton menuItemId={item.id} isFavorite={item.isFavorite} />
+                    </div>
+                    
                     {item.description && (
-                      <p className="text-sm text-gray-500 mt-1 leading-relaxed">{item.description}</p>
+                      <p className="text-xs text-gray-500 mt-2 line-clamp-2 leading-relaxed">{item.description}</p>
                     )}
 
-                    <div className="mt-4 border-t border-pink-50 pt-4">
+                    <div className="mt-4 pt-3 border-t border-pink-50 sm:mt-auto sm:border-0 sm:pt-2">
                       <OrderForm menuItemId={item.id} />
                     </div>
                   </div>
