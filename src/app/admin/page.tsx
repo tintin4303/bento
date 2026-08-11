@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { toggleMenuItemAvailability, updateOrderStatus } from "@/app/actions";
+import { toggleMenuItemAvailability, updateOrderStatus, updateChefNote } from "@/app/actions";
 import { MonkeySlider } from "@/components/icons/MonkeySlider";
 import { LogoutButton } from "@/components/LogoutButton";
 import { MenuItemForm } from "@/components/MenuItemForm";
@@ -24,7 +24,7 @@ export default async function AdminDashboard() {
   const activeOrders = await prisma.order.findMany({
     where: { status: { not: "COMPLETED" } },
     include: { menuItem: true },
-    orderBy: { date: "asc" }
+    orderBy: { targetDate: "asc" }
   });
 
   const recentReviews = await prisma.review.findMany({
@@ -56,7 +56,7 @@ export default async function AdminDashboard() {
                   <img src={item.imageUrl} alt={item.name} className="w-16 h-16 rounded-xl object-cover bg-pink-50" />
                 )}
                 <div className="flex-1">
-                  <h3 className="text-md font-bold text-gray-900">{item.name}</h3>
+                  <h3 className="text-md font-bold text-gray-900">{item.name} {item.isFavorite && "❤️"}</h3>
                   <span className="text-xs text-gray-400">{item.category}</span>
                   
                   <div className="flex gap-2 mt-3">
@@ -90,45 +90,61 @@ export default async function AdminDashboard() {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Active Orders</h1>
         <p className="text-gray-500 mb-6">Track your cooking progress.</p>
         
-        {activeOrders.length === 0 ? (
-          <Card className="text-center py-8">
-            <p className="text-gray-500">No active orders yet.</p>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {activeOrders.map(order => (
-              <Card key={order.id} className="border-l-4 border-l-secondary">
-                <div className="flex justify-between items-start mb-4">
+        <div className="space-y-4">
+          {activeOrders.length === 0 ? (
+            <p className="text-gray-500 text-sm">No active orders right now.</p>
+          ) : (
+            activeOrders.map(order => (
+              <Card key={order.id} className="p-4 border-secondary/20 bg-white">
+                <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900">{order.menuItem.name}</h3>
-                    {order.notes && <p className="text-sm text-gray-600 mt-1 italic">"{order.notes}"</p>}
+                    <h3 className="font-bold text-gray-900">{order.menuItem.name} {order.menuItem.isFavorite && "❤️"}</h3>
+                    <p className="text-xs text-gray-400">
+                      For: {order.targetDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </p>
                   </div>
-                  <span className="px-2 py-1 bg-pink-100 text-secondary text-xs rounded-full font-bold">
+                  <span className="text-xs font-bold px-2 py-1 bg-pink-100 text-secondary rounded-full">
                     {order.status}
                   </span>
                 </div>
                 
+                {order.notes && (
+                  <p className="text-sm text-gray-600 bg-pink-50 p-2 rounded-md mb-3 italic border border-pink-100">
+                    "{order.notes}"
+                  </p>
+                )}
+
+                <form action={async (formData) => {
+                  "use server";
+                  const note = formData.get("chefNote") as string;
+                  if (note) {
+                    await updateChefNote(order.id, note);
+                  }
+                }} className="mb-3 flex gap-2">
+                  <input 
+                    type="text" 
+                    name="chefNote" 
+                    placeholder={(order as any).chefNote || "Leave a love note..."} 
+                    className="flex-1 text-xs px-2 py-1 border border-pink-100 rounded-md focus:outline-none focus:border-secondary"
+                  />
+                  <Button type="submit" className="text-[10px] py-1 px-2">Save Note</Button>
+                </form>
+
                 <div className="flex gap-2">
-                  {order.status === "PENDING" && (
-                    <form action={async () => { "use server"; await updateOrderStatus(order.id, "COOKING"); }}>
-                      <Button variant="secondary" className="text-sm py-1 px-3">Start Cooking</Button>
-                    </form>
-                  )}
-                  {order.status === "COOKING" && (
-                    <form action={async () => { "use server"; await updateOrderStatus(order.id, "READY"); }}>
-                      <Button variant="primary" className="text-sm py-1 px-3">Ready!</Button>
-                    </form>
-                  )}
-                  {order.status === "READY" && (
-                    <form action={async () => { "use server"; await updateOrderStatus(order.id, "COMPLETED"); }}>
-                      <Button variant="outline" className="text-sm py-1 px-3">Complete (Delivered)</Button>
-                    </form>
-                  )}
+                  <form action={async () => { "use server"; await updateOrderStatus(order.id, "COOKING"); }} className="flex-1">
+                    <Button variant="outline" className="w-full text-xs py-1 px-0 text-orange-500 border-orange-200 hover:bg-orange-50">Cook</Button>
+                  </form>
+                  <form action={async () => { "use server"; await updateOrderStatus(order.id, "READY"); }} className="flex-1">
+                    <Button variant="outline" className="w-full text-xs py-1 px-0 text-blue-500 border-blue-200 hover:bg-blue-50">Ready</Button>
+                  </form>
+                  <form action={async () => { "use server"; await updateOrderStatus(order.id, "COMPLETED"); }} className="flex-1">
+                    <Button variant="primary" className="w-full text-xs py-1 px-0">Done</Button>
+                  </form>
                 </div>
               </Card>
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
       </div>
 
       {/* Feedback Inbox */}

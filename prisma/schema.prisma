@@ -31,6 +31,7 @@ model MenuItem {
   imageUrl            String?
   category            Category
   isAvailableThisWeek Boolean  @default(false)
+  isFavorite          Boolean  @default(false)
   orders              Order[]
 }
 
@@ -44,10 +45,12 @@ enum Category {
 model Order {
   id         String      @id @default(uuid())
   menuItemId String
-  menuItem   MenuItem    @relation(fields: [menuItemId], references: [id])
+  menuItem   MenuItem    @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
   date       DateTime    @default(now())
+  targetDate DateTime    @default(now())
   status     OrderStatus @default(PENDING)
   notes      String?
+  chefNote   String?
   review     Review?
 }
 
@@ -61,7 +64,7 @@ enum OrderStatus {
 model Review {
   id       String  @id @default(uuid())
   orderId  String  @unique
-  order    Order   @relation(fields: [orderId], references: [id])
+  order    Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   rating   Int     // 1 to 5
   feedback String?
 }

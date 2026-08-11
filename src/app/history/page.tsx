@@ -20,7 +20,7 @@ export default async function HistoryPage() {
       menuItem: true,
       review: true
     },
-    orderBy: { date: "desc" }
+    orderBy: { targetDate: "desc" }
   });
 
   return (
@@ -51,8 +51,18 @@ export default async function HistoryPage() {
                   )}
                   <div>
                     <h3 className="text-lg font-bold text-gray-900">{order.menuItem.name}</h3>
-                    <p className="text-xs text-gray-400">{order.date.toLocaleDateString()}</p>
-                    {order.notes && <p className="text-sm text-gray-600 mt-2 italic">Notes: "{order.notes}"</p>}
+                    <p className="text-xs text-gray-400">Delivered: {order.targetDate.toLocaleDateString()}</p>
+                    {order.notes && <p className="text-sm text-gray-600 mt-2 italic">Your Notes: "{order.notes}"</p>}
+                    
+                    {order.chefNote && (
+                      <div className="mt-3 p-3 bg-pink-100/50 rounded-xl border border-pink-100 flex gap-2 items-start">
+                        <span className="text-xl">👨‍🍳</span>
+                        <div>
+                          <p className="text-xs font-bold text-secondary mb-1">Chef's Note</p>
+                          <p className="text-sm text-gray-700 italic">"{order.chefNote}"</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 

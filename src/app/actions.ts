@@ -12,12 +12,40 @@ export async function toggleMenuItemAvailability(id: string, isAvailable: boolea
   revalidatePath("/");
 }
 
-export async function createOrder(menuItemId: string, notes?: string) {
+export async function createOrder(menuItemId: string, notes?: string, targetDateStr?: string) {
   await prisma.order.create({
     data: {
       menuItemId,
       notes,
+      targetDate: targetDateStr ? new Date(targetDateStr) : new Date(),
     }
+  });
+  revalidatePath("/");
+  revalidatePath("/admin");
+}
+
+export async function cancelOrder(id: string) {
+  await prisma.order.delete({
+    where: { id }
+  });
+  revalidatePath("/");
+  revalidatePath("/admin");
+}
+
+export async function updateChefNote(id: string, chefNote: string) {
+  await prisma.order.update({
+    where: { id },
+    data: { chefNote }
+  });
+  revalidatePath("/admin");
+  revalidatePath("/");
+  revalidatePath("/history");
+}
+
+export async function toggleFavorite(id: string, isFavorite: boolean) {
+  await prisma.menuItem.update({
+    where: { id },
+    data: { isFavorite }
   });
   revalidatePath("/");
   revalidatePath("/admin");
