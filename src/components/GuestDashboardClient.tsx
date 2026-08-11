@@ -50,11 +50,15 @@ export function GuestDashboardClient({ menuItems, activeOrders, connectedChef }:
             {activeOrders.map(order => {
               const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.PENDING;
               return (
-                <div key={order.id} className="bg-white rounded-2xl border border-pink-50 shadow-sm overflow-hidden flex items-center gap-4 pr-4">
+                <div key={order.id} className="bg-white rounded-2xl border border-pink-50 shadow-sm p-4 flex items-center gap-4">
                   {order.menuItem.imageUrl ? (
-                    <img src={order.menuItem.imageUrl} alt={order.menuItem.name} className="w-20 h-20 object-cover flex-shrink-0" />
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-pink-50">
+                      <img src={order.menuItem.imageUrl} alt={order.menuItem.name} className="w-full h-full object-cover" />
+                    </div>
                   ) : (
-                    <div className="w-20 h-20 bg-pink-100 flex items-center justify-center text-3xl flex-shrink-0">🍱</div>
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl bg-pink-50 flex items-center justify-center text-3xl">
+                      🍱
+                    </div>
                   )}
                   <div className="flex-1 min-w-0 py-3">
                     <p className="font-black text-gray-900 text-sm">{order.menuItem.name}</p>
