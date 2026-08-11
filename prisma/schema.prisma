@@ -32,6 +32,9 @@ model User {
 
   menuItems       MenuItem[]
   orders          Order[]
+
+  guestDishRequests DishRequest[] @relation("GuestDishRequests")
+  chefDishRequests  DishRequest[] @relation("ChefDishRequests")
 }
 
 enum Role {
@@ -90,4 +93,23 @@ model Review {
   order    Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   rating   Int     // 1 to 5
   feedback String?
+}
+
+model DishRequest {
+  id        String   @id @default(uuid())
+  guestId   String
+  guest     User     @relation("GuestDishRequests", fields: [guestId], references: [id], onDelete: Cascade)
+  chefId    String
+  chef      User     @relation("ChefDishRequests", fields: [chefId], references: [id], onDelete: Cascade)
+  
+  dishName  String
+  notes     String?
+  status    DishRequestStatus @default(PENDING)
+  createdAt DateTime @default(now())
+}
+
+enum DishRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
