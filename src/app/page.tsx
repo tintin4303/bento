@@ -2,22 +2,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { MonkeyEmpty } from "@/components/icons/MonkeyEmpty";
-import { OrderForm } from "@/components/OrderForm";
-import { CancelButton } from "@/components/CancelButton";
-import { FavoriteButton } from "@/components/FavoriteButton";
-import { CalendarView } from "@/components/CalendarView";
 import { GuestMenu } from "@/components/GuestMenu";
 import { HistoryList } from "@/components/HistoryList";
 import { ProfileForm } from "@/components/ProfileForm";
 import { DishRequestForm } from "@/components/DishRequestForm";
 import { ConnectedChefProfile } from "@/components/ConnectedChefProfile";
-
-const STATUS_CONFIG: Record<string, { label: string; dot: string; pill: string }> = {
-  PENDING:  { label: "Pending",  dot: "bg-yellow-400", pill: "bg-yellow-50 text-yellow-700 border border-yellow-200" },
-  COOKING:  { label: "Cooking",  dot: "bg-orange-400", pill: "bg-orange-50 text-orange-700 border border-orange-200" },
-  READY:    { label: "Ready!",   dot: "bg-blue-400",   pill: "bg-blue-50   text-blue-700   border border-blue-200" },
-};
+import { GuestDashboardClient } from "@/components/GuestDashboardClient";
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions);
@@ -92,7 +82,6 @@ export default async function Dashboard() {
   const profileNode = <ProfileForm user={dbUser} isChef={false} />;
   const chefNode    = <ConnectedChefProfile chef={connectedChef as any} />;
 
-  /* ── helpers ── */
   const greeting = () => {
     const h = new Date().getHours();
     if (h < 12) return "Good morning";
@@ -130,8 +119,7 @@ export default async function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-5 pb-16 space-y-8">
-
+      <main className="max-w-2xl mx-auto px-5 pb-16 space-y-6">
         {/* ─── Hero greeting ─── */}
         <div className="pt-8 pb-2">
           <p className="text-gray-400 text-sm font-semibold">{greeting()},</p>
@@ -139,112 +127,16 @@ export default async function Dashboard() {
           <p className="text-gray-500 text-sm mt-1">
             {activeOrders.length > 0
               ? `You have ${activeOrders.length} upcoming order${activeOrders.length > 1 ? "s" : ""}. Enjoy your meal!`
-              : "Nothing ordered yet — check out this week's menu below!"}
+              : "Nothing ordered yet — tap a day in the calendar then pick a dish below!"}
           </p>
         </div>
 
-        {/* ─── Delivery Calendar ─── */}
-        <CalendarView orders={activeOrders as any} />
-
-        {/* ─── Active Orders ─── */}
-        {activeOrders.length > 0 && (
-          <section>
-            <h2 className="text-xl font-black text-gray-900 mb-4">Your Orders</h2>
-            <div className="space-y-3">
-              {activeOrders.map(order => {
-                const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.PENDING;
-                return (
-                  <div key={order.id} className="bg-white rounded-2xl border border-pink-50 shadow-sm overflow-hidden flex items-center gap-4 pr-4">
-                    {order.menuItem.imageUrl ? (
-                      <img
-                        src={order.menuItem.imageUrl}
-                        alt={order.menuItem.name}
-                        className="w-20 h-20 object-cover flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-20 h-20 bg-pink-100 flex items-center justify-center text-3xl flex-shrink-0">🍱</div>
-                    )}
-                    <div className="flex-1 min-w-0 py-3">
-                      <p className="font-black text-gray-900 text-sm">{order.menuItem.name}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {order.targetDate.toLocaleDateString("en-US", { timeZone: "Asia/Bangkok", weekday: "short", month: "short", day: "numeric" })}
-                      </p>
-                      <span className={`mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${cfg.pill}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                        {cfg.label}
-                      </span>
-                    </div>
-                    {order.status === "PENDING" && <CancelButton orderId={order.id} />}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* ─── This Week's Menu ─── */}
-        <section>
-          <div className="flex items-baseline justify-between mb-4">
-            <h2 className="text-xl font-black text-gray-900">This Week's Menu</h2>
-            {menuItems.length > 0 && (
-              <span className="text-xs text-gray-400 font-semibold">{menuItems.length} dish{menuItems.length !== 1 ? "es" : ""}</span>
-            )}
-          </div>
-
-          {menuItems.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-dashed border-pink-200 p-12 text-center flex flex-col items-center">
-              <MonkeyEmpty className="w-28 h-28 text-secondary mb-4" />
-              <p className="font-bold text-gray-700">No menu this week yet!</p>
-              <p className="text-sm text-gray-400 mt-1">
-                {connectedChef
-                  ? `${connectedChef.displayName || connectedChef.username} is still planning the menu.`
-                  : "You're not connected to a chef yet."}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {menuItems.map(item => (
-                <div
-                  key={item.id}
-                  className="bg-white rounded-2xl border border-pink-50 shadow-sm p-4 flex flex-col sm:flex-row gap-4 hover:border-secondary/40 hover:shadow-md transition-all duration-200"
-                >
-                  {/* Image */}
-                  {item.imageUrl ? (
-                    <div className="relative w-full sm:w-28 h-32 sm:h-28 flex-shrink-0 rounded-xl overflow-hidden bg-pink-50">
-                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                    </div>
-                  ) : (
-                    <div className="relative w-full sm:w-28 h-32 sm:h-28 flex-shrink-0 rounded-xl bg-pink-50 flex items-center justify-center text-3xl">
-                      🍱
-                    </div>
-                  )}
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0 flex flex-col">
-                    <div className="flex justify-between items-start">
-                      <div className="pr-2">
-                        <h3 className="text-lg font-black text-gray-900 leading-tight">{item.name}</h3>
-                        <span className="text-[10px] font-bold px-2 py-0.5 bg-pink-100 text-secondary rounded-full uppercase tracking-wide inline-block mt-1">
-                          {item.category}
-                        </span>
-                      </div>
-                      <FavoriteButton menuItemId={item.id} isFavorite={item.isFavorite} />
-                    </div>
-                    
-                    {item.description && (
-                      <p className="text-xs text-gray-500 mt-2 line-clamp-2 leading-relaxed">{item.description}</p>
-                    )}
-
-                    <div className="mt-4 pt-3 border-t border-pink-50 sm:mt-auto sm:border-0 sm:pt-2">
-                      <OrderForm menuItemId={item.id} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
+        {/* ─── Interactive dashboard (calendar + orders + menu) ─── */}
+        <GuestDashboardClient
+          menuItems={menuItems as any}
+          activeOrders={activeOrders as any}
+          connectedChef={connectedChef as any}
+        />
       </main>
     </div>
   );
