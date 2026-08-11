@@ -11,6 +11,7 @@ import { FeedbackInbox } from "@/components/FeedbackInbox";
 import { DishRequestInbox } from "@/components/DishRequestInbox";
 import { ProfileForm } from "@/components/ProfileForm";
 import { ConnectedGuestsList } from "@/components/ConnectedGuestsList";
+import { AutoRefresh } from "@/components/AutoRefresh";
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string; badge: string }> = {
   PENDING:  { label: "Pending",  dot: "bg-yellow-400", badge: "bg-yellow-50  text-yellow-700 border border-yellow-200" },
@@ -69,6 +70,7 @@ export default async function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-[#FDF2F8]">
+      <AutoRefresh intervalMs={5000} />
       {/* ─── Top Nav Bar ─── */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-pink-100">
         <div className="max-w-6xl mx-auto px-5 py-3 flex justify-between items-center">
