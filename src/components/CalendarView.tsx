@@ -1,15 +1,27 @@
+"use client";
+
 import { Order, MenuItem } from "@/generated/prisma/client";
+import { useEffect, useState } from "react";
 
 type OrderWithMenu = Order & { menuItem: MenuItem };
 
 export function CalendarView({ orders }: { orders: OrderWithMenu[] }) {
-  // Generate the next 14 days
-  const days = Array.from({ length: 14 }).map((_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    d.setHours(0, 0, 0, 0);
-    return d;
-  });
+  const [days, setDays] = useState<Date[]>([]);
+
+  useEffect(() => {
+    // Generate the next 14 days strictly on the client
+    const generated = Array.from({ length: 14 }).map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    });
+    setDays(generated);
+  }, []);
+
+  if (days.length === 0) {
+    return <div className="h-32 mb-10 overflow-hidden animate-pulse bg-pink-50 rounded-2xl" />;
+  }
 
   return (
     <div className="mb-10 overflow-hidden">

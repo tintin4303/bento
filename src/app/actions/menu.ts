@@ -26,6 +26,7 @@ export async function createMenuItem(formData: FormData) {
       description,
       category,
       imageUrl,
+      isAvailableThisWeek: true,
     }
   });
   
