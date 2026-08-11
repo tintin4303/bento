@@ -34,8 +34,18 @@ export function ConnectedGuestsList({ guests }: ConnectedGuestsListProps) {
             <div className="flex-1">
               <h3 className="text-lg font-bold text-gray-900">{guest.displayName || guest.username}</h3>
               
-              {((guest as any).likes?.length > 0 || (guest as any).dislikes?.length > 0) && (
+              {((guest as any).likes?.length > 0 || (guest as any).dislikes?.length > 0 || (guest as any).allergies?.length > 0) && (
                 <div className="mt-2 space-y-1.5">
+                  {(guest as any).allergies?.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mr-1 mt-0.5">Allergies</span>
+                      {(guest as any).allergies.map((allergy: string, i: number) => (
+                        <span key={i} className="text-[10px] font-semibold bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full border border-orange-200">
+                          {allergy}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   {(guest as any).likes?.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mr-1 mt-0.5">Likes</span>

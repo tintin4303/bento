@@ -23,6 +23,7 @@ model User {
   avatarUrl       String?
   likes           String[]
   dislikes        String[]
+  allergies       String[]
 
   // If role is ADMIN (Chef)
   chefCode        String?  @unique

@@ -27,6 +27,7 @@ export async function updateProfile(formData: FormData) {
       ...(avatarUrl && { avatarUrl }),
       likes: formData.get("likes") ? String(formData.get("likes")).split(",").map(s => s.trim()).filter(Boolean) : undefined,
       dislikes: formData.get("dislikes") ? String(formData.get("dislikes")).split(",").map(s => s.trim()).filter(Boolean) : undefined,
+      allergies: formData.get("allergies") ? String(formData.get("allergies")).split(",").map(s => s.trim()).filter(Boolean) : undefined,
     }
   });
 

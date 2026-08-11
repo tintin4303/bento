@@ -26,7 +26,7 @@ function TagsInput({
   label: string; 
   initialTags: string[]; 
   placeholder: string;
-  theme?: "pink" | "green" | "red";
+  theme?: "pink" | "green" | "red" | "orange";
 }) {
   const [tags, setTags] = useState<string[]>(initialTags);
   const [input, setInput] = useState("");
@@ -54,6 +54,7 @@ function TagsInput({
     pink: "bg-pink-50 text-secondary border-pink-100",
     green: "bg-green-50 text-green-700 border-green-100",
     red: "bg-red-50 text-red-700 border-red-100",
+    orange: "bg-orange-50 text-orange-700 border-orange-200",
   }[theme];
 
   return (
@@ -166,6 +167,13 @@ export function ProfileForm({ user, isChef }: ProfileFormProps) {
               initialTags={(user as any).dislikes || []} 
               placeholder="e.g. Cilantro, Mushrooms"
               theme="red"
+            />
+            <TagsInput 
+              name="allergies" 
+              label="I'm allergic to... (Allergies)" 
+              initialTags={(user as any).allergies || []} 
+              placeholder="e.g. Peanuts, Shellfish"
+              theme="orange"
             />
           </div>
         )}
