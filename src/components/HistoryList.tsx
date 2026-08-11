@@ -1,43 +1,14 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import prisma from "@/lib/prisma";
 import { Card } from "@/components/ui/Card";
 import { ReviewForm } from "@/components/ReviewForm";
-import Link from "next/link";
 import { MonkeySlider } from "@/components/icons/MonkeySlider";
 
-export default async function HistoryPage() {
-  const session = await getServerSession(authOptions);
+interface HistoryListProps {
+  completedOrders: any[];
+}
 
-  if (!session || (session.user as any).role === "ADMIN") {
-    redirect("/login");
-  }
-
-  const guestId = (session.user as any).id;
-
-  const completedOrders = await prisma.order.findMany({
-    where: { status: "COMPLETED", guestId },
-    include: { 
-      menuItem: true,
-      review: true
-    },
-    orderBy: { targetDate: "desc" }
-  });
-
+export function HistoryList({ completedOrders }: HistoryListProps) {
   return (
-    <div className="p-4 max-w-2xl mx-auto w-full pt-10">
-      
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Order History</h1>
-          <p className="text-gray-500">Review your past lunches.</p>
-        </div>
-        <Link href="/" className="text-sm font-bold text-secondary bg-pink-50 px-4 py-2 rounded-xl hover:bg-pink-100 transition-colors">
-          Back to Menu
-        </Link>
-      </div>
-
+    <div className="w-full">
       {completedOrders.length === 0 ? (
         <Card className="text-center py-12">
           <p className="text-gray-500">No completed orders yet.</p>

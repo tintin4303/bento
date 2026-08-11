@@ -5,13 +5,13 @@ import prisma from "@/lib/prisma";
 import { Card } from "@/components/ui/Card";
 import { MonkeyEmpty } from "@/components/icons/MonkeyEmpty";
 import { OrderForm } from "@/components/OrderForm";
-import { LogoutButton } from "@/components/LogoutButton";
 import { CancelButton } from "@/components/CancelButton";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { CalendarView } from "@/components/CalendarView";
-import { UserProfileBadge } from "@/components/UserProfileBadge";
+import { GuestMenu } from "@/components/GuestMenu";
+import { HistoryList } from "@/components/HistoryList";
+import { ProfileForm } from "@/components/ProfileForm";
 import { DishRequestForm } from "@/components/DishRequestForm";
-import Link from "next/link";
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions);
@@ -25,6 +25,9 @@ export default async function Dashboard() {
   if (user.role === "ADMIN") {
     redirect("/admin");
   }
+
+  const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+  if (!dbUser) redirect("/login");
 
   // If the guest is not connected to any chef yet, don't crash, just show empty
   const connectedChefId = user.connectedChefId;
@@ -49,8 +52,59 @@ export default async function Dashboard() {
     take: 5
   });
 
+  const completedOrders = await prisma.order.findMany({
+    where: { status: "COMPLETED", guestId: user.id },
+    include: { menuItem: true, review: true },
+    orderBy: { targetDate: "desc" }
+  });
+
+  // Nodes for Modals
+  const historyNode = <HistoryList completedOrders={completedOrders as any} />;
+  
+  const dishRequestNode = (
+    <div>
+      <p className="text-sm text-gray-500 mb-4">Send your chef a request for a new dish!</p>
+      <DishRequestForm />
+      {dishRequests.length > 0 && (
+        <div className="mt-6 space-y-2">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Your Recent Requests</h3>
+          {dishRequests.map(req => (
+            <div key={req.id} className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
+              <div>
+                <p className="font-bold text-sm text-gray-900">{req.dishName}</p>
+                {req.notes && <p className="text-xs text-gray-500 italic mt-0.5">"{req.notes}"</p>}
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${
+                req.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                req.status === 'ACCEPTED' ? 'bg-green-100 text-green-700' :
+                'bg-red-100 text-red-700'
+              }`}>
+                {req.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const profileNode = <ProfileForm user={dbUser} isChef={false} />;
+
   return (
     <div className="p-4 max-w-2xl mx-auto w-full pt-10 overflow-hidden">
+      
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-black text-gray-900 mb-1">Bento Box 🍱</h1>
+          <p className="text-gray-500 text-sm font-semibold">Hello, {dbUser.displayName || dbUser.username}!</p>
+        </div>
+        <GuestMenu 
+          historyNode={historyNode} 
+          dishRequestNode={dishRequestNode} 
+          profileNode={profileNode} 
+        />
+      </div>
+
       <CalendarView orders={activeOrders as any} />
       
       {activeOrders.length > 0 && (
@@ -75,18 +129,11 @@ export default async function Dashboard() {
         </div>
       )}
 
-      <div className="flex justify-between items-center mb-2">
-        <h1 className="text-3xl font-bold text-gray-900">This Week's Menu</h1>
-        <div className="flex items-center gap-2">
-          <UserProfileBadge />
-          <LogoutButton />
+      <div className="flex justify-between items-center mb-6 mt-8">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">This Week's Menu</h2>
+          <p className="text-gray-500 text-sm mt-1">Select your lunch for the week! ❤️</p>
         </div>
-      </div>
-      <div className="flex justify-between items-center mb-8">
-        <p className="text-gray-500">Select your lunch for the week! ❤️</p>
-        <Link href="/history" className="text-sm font-bold text-secondary bg-pink-50 px-4 py-2 rounded-xl hover:bg-pink-100 transition-colors">
-          View History
-        </Link>
       </div>
       
       {menuItems.length === 0 ? (
@@ -96,7 +143,7 @@ export default async function Dashboard() {
           <p className="text-gray-500">The chef is still deciding what to cook.</p>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-4 mb-12">
           {menuItems.map(item => (
             <Card key={item.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-secondary transition-colors overflow-hidden relative">
               <div className="absolute top-4 right-4 sm:static">
@@ -119,34 +166,6 @@ export default async function Dashboard() {
           ))}
         </div>
       )}
-
-      {/* Dish Request Section */}
-      <div className="mt-12 mb-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Craving Something Else?</h2>
-        <p className="text-sm text-gray-500">Send your chef a request for a new dish!</p>
-        <DishRequestForm />
-        
-        {dishRequests.length > 0 && (
-          <div className="mt-6 space-y-2">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Your Recent Requests</h3>
-            {dishRequests.map(req => (
-              <div key={req.id} className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-                <div>
-                  <p className="font-bold text-sm text-gray-900">{req.dishName}</p>
-                  {req.notes && <p className="text-xs text-gray-500 italic mt-0.5">"{req.notes}"</p>}
-                </div>
-                <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${
-                  req.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                  req.status === 'ACCEPTED' ? 'bg-green-100 text-green-700' :
-                  'bg-red-100 text-red-700'
-                }`}>
-                  {req.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
     </div>
   );
