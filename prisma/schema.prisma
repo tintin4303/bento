@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id       String  @id @default(uuid())
+  username String  @unique
+  password String  // Hashed password
+  role     Role    @default(USER)
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model MenuItem {
+  id                  String   @id @default(uuid())
+  name                String
+  description         String?
+  imageUrl            String?
+  category            Category
+  isAvailableThisWeek Boolean  @default(false)
+  orders              Order[]
+}
+
+enum Category {
+  MAIN
+  SIDE
+  DRINK
+  DESSERT
+}
+
+model Order {
+  id         String      @id @default(uuid())
+  menuItemId String
+  menuItem   MenuItem    @relation(fields: [menuItemId], references: [id])
+  date       DateTime    @default(now())
+  status     OrderStatus @default(PENDING)
+  notes      String?
+  review     Review?
+}
+
+enum OrderStatus {
+  PENDING
+  COOKING
+  READY
+  COMPLETED
+}
+
+model Review {
+  id       String  @id @default(uuid())
+  orderId  String  @unique
+  order    Order   @relation(fields: [orderId], references: [id])
+  rating   Int     // 1 to 5
+  feedback String?
+}
