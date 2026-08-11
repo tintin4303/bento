@@ -21,6 +21,8 @@ model User {
   // Profile info
   displayName     String?
   avatarUrl       String?
+  likes           String[]
+  dislikes        String[]
 
   // If role is ADMIN (Chef)
   chefCode        String?  @unique

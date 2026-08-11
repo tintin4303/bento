@@ -58,6 +58,31 @@ export function ProfileForm({ user, isChef }: ProfileFormProps) {
           />
         </div>
 
+        {!isChef && (
+          <div className="space-y-4 pt-2">
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1">I love eating... (Likes)</label>
+              <input 
+                name="likes" 
+                type="text" 
+                defaultValue={(user as any).likes?.join(", ") || ""} 
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-pink-100 transition-all text-sm"
+                placeholder="e.g. Sushi, Steak, Spicy food (comma separated)"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1">I can't stand... (Dislikes)</label>
+              <input 
+                name="dislikes" 
+                type="text" 
+                defaultValue={(user as any).dislikes?.join(", ") || ""} 
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-pink-100 transition-all text-sm"
+                placeholder="e.g. Cilantro, Mushrooms (comma separated)"
+              />
+            </div>
+          </div>
+        )}
+
         <Button type="submit" variant="primary" className="w-full py-3 text-lg mt-4 shadow-lg shadow-pink-200">
           Save Profile
         </Button>

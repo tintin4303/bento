@@ -31,12 +31,36 @@ export function ConnectedGuestsList({ guests }: ConnectedGuestsListProps) {
               💁‍♀️
             </div>
           )}
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">{guest.displayName || guest.username}</h3>
-            <p className="text-xs text-gray-500">Connected Guest</p>
-          </div>
-        </Card>
-      ))}
-    </div>
-  );
-}
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-gray-900">{guest.displayName || guest.username}</h3>
+              
+              {((guest as any).likes?.length > 0 || (guest as any).dislikes?.length > 0) && (
+                <div className="mt-2 space-y-1.5">
+                  {(guest as any).likes?.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mr-1 mt-0.5">Likes</span>
+                      {(guest as any).likes.map((like: string, i: number) => (
+                        <span key={i} className="text-[10px] font-semibold bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-100">
+                          {like}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {(guest as any).dislikes?.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mr-1 mt-0.5">Dislikes</span>
+                      {(guest as any).dislikes.map((dislike: string, i: number) => (
+                        <span key={i} className="text-[10px] font-semibold bg-red-50 text-red-700 px-2 py-0.5 rounded-full border border-red-100">
+                          {dislike}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </Card>
+        ))}
+      </div>
+    );
+  }
