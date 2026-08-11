@@ -40,7 +40,7 @@ export function HamburgerMenu({ children }: HamburgerMenuProps) {
   );
 }
 
-export function MenuButton({ onClick, icon, label }: { onClick: () => void, icon: string, label: string }) {
+export function MenuButton({ onClick, icon, label }: { onClick: () => void, icon: ReactNode, label: string }) {
   return (
     <button 
       type="button" 
@@ -56,7 +56,7 @@ export function MenuButton({ onClick, icon, label }: { onClick: () => void, icon
       }}
       className="flex items-center gap-3 w-full text-left px-4 py-2 hover:bg-pink-50 rounded-xl transition-colors text-sm font-semibold text-gray-700 hover:text-secondary"
     >
-      <span className="text-lg">{icon}</span>
+      <span className="text-gray-500">{icon}</span>
       {label}
     </button>
   );

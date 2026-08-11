@@ -3,6 +3,7 @@
 import { useState, ReactNode } from "react";
 import { HamburgerMenu, MenuButton } from "./HamburgerMenu";
 import { Modal } from "./Modal";
+import { Inbox, Utensils, ChefHat } from "lucide-react";
 
 interface ChefMenuProps {
   feedbackNode: ReactNode;
@@ -16,9 +17,9 @@ export function ChefMenu({ feedbackNode, dishRequestNode, profileNode }: ChefMen
   return (
     <>
       <HamburgerMenu>
-        <MenuButton icon="💌" label="Feedback Inbox" onClick={() => setActiveModal("feedback")} />
-        <MenuButton icon="✨" label="Dish Requests" onClick={() => setActiveModal("requests")} />
-        <MenuButton icon="👨‍🍳" label="My Profile" onClick={() => setActiveModal("profile")} />
+        <MenuButton icon={<Inbox size={18} />} label="Feedback Inbox" onClick={() => setActiveModal("feedback")} />
+        <MenuButton icon={<Utensils size={18} />} label="Dish Requests" onClick={() => setActiveModal("requests")} />
+        <MenuButton icon={<ChefHat size={18} />} label="My Profile" onClick={() => setActiveModal("profile")} />
       </HamburgerMenu>
 
       <Modal id="feedback-modal" title="Feedback Inbox" isOpen={activeModal === "feedback"} onClose={() => setActiveModal(null)}>
