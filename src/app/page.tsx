@@ -49,6 +49,9 @@ export default async function Dashboard() {
     orderBy: { targetDate: "desc" },
   });
 
+  /* ── Unreviewed completed orders (for rating prompt on dashboard) ── */
+  const unreviewedOrders = completedOrders.filter(o => !o.review);
+
   /* ── Modal content nodes ── */
   const historyNode = <HistoryList completedOrders={completedOrders as any} />;
 
@@ -57,27 +60,36 @@ export default async function Dashboard() {
       <p className="text-sm text-gray-500 mb-4">Send your chef a request for a new dish!</p>
       <DishRequestForm />
       {dishRequests.length > 0 && (
-        <div className="mt-6 space-y-2">
+        <div className="mt-6 space-y-3">
           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Your Recent Requests</h3>
           {dishRequests.map(req => (
-            <div key={req.id} className="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-              <div>
-                <p className="font-bold text-sm text-gray-900">{req.dishName}</p>
-                {req.notes && <p className="text-xs text-gray-500 italic mt-0.5">"{req.notes}"</p>}
+            <div key={req.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="flex justify-between items-start p-3">
+                <div>
+                  <p className="font-bold text-sm text-gray-900">{req.dishName}</p>
+                  {req.notes && <p className="text-xs text-gray-500 italic mt-0.5">"{req.notes}"</p>}
+                </div>
+                <span className={`text-[10px] font-bold px-2 py-1 rounded-full flex-shrink-0 ml-2 ${
+                  req.status === "PENDING"  ? "bg-yellow-100 text-yellow-700" :
+                  req.status === "ACCEPTED" ? "bg-green-100  text-green-700"  :
+                  "bg-red-100 text-red-700"
+                }`}>
+                  {req.status}
+                </span>
               </div>
-              <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${
-                req.status === "PENDING"  ? "bg-yellow-100 text-yellow-700" :
-                req.status === "ACCEPTED" ? "bg-green-100  text-green-700"  :
-                "bg-red-100 text-red-700"
-              }`}>
-                {req.status}
-              </span>
+              {req.replyNote && (
+                <div className="px-3 pb-3 flex items-start gap-2 border-t border-pink-50 pt-2">
+                  <span className="text-base">👨‍🍳</span>
+                  <p className="text-xs text-gray-600 italic">"{req.replyNote}"</p>
+                </div>
+              )}
             </div>
           ))}
         </div>
       )}
     </div>
   );
+
 
   const profileNode = <ProfileForm user={dbUser} isChef={false} />;
   const chefNode    = <ConnectedChefProfile chef={connectedChef as any} />;
@@ -136,6 +148,7 @@ export default async function Dashboard() {
           menuItems={menuItems as any}
           activeOrders={activeOrders as any}
           connectedChef={connectedChef as any}
+          unreviewedOrders={unreviewedOrders as any}
         />
       </main>
     </div>

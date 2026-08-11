@@ -7,14 +7,17 @@ import { OrderForm } from "./OrderForm";
 import { FavoriteButton } from "./FavoriteButton";
 import { CancelButton } from "./CancelButton";
 import { MonkeyEmpty } from "./icons/MonkeyEmpty";
+import { ReviewForm } from "./ReviewForm";
+import { Star } from "lucide-react";
 
-type OrderWithMenu = Order & { menuItem: MenuItem };
+type OrderWithMenu = Order & { menuItem: MenuItem; review: any | null };
 type MenuItemType = MenuItem;
 
 interface GuestDashboardClientProps {
   menuItems: MenuItemType[];
   activeOrders: OrderWithMenu[];
   connectedChef: User | null;
+  unreviewedOrders: OrderWithMenu[];
 }
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string; pill: string }> = {
@@ -23,8 +26,9 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string; pill: string }
   READY:   { label: "Ready!",  dot: "bg-blue-400",   pill: "bg-blue-50   text-blue-700   border border-blue-200" },
 };
 
-export function GuestDashboardClient({ menuItems, activeOrders, connectedChef }: GuestDashboardClientProps) {
+export function GuestDashboardClient({ menuItems, activeOrders, connectedChef, unreviewedOrders }: GuestDashboardClientProps) {
   const [selectedDate, setSelectedDate] = useState<string>("");
+  const [dismissedRatings, setDismissedRatings] = useState<Set<string>>(new Set());
   const calendarRef = useRef<HTMLDivElement>(null);
 
   const scrollToCalendar = () => {
@@ -41,6 +45,36 @@ export function GuestDashboardClient({ menuItems, activeOrders, connectedChef }:
           onSelectDate={setSelectedDate}
         />
       </div>
+
+      {/* ─── Rate your meal prompt ─── */}
+      {unreviewedOrders.filter(o => !dismissedRatings.has(o.id)).map(order => (
+        <div key={order.id} className="bg-white rounded-2xl border border-yellow-200 shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-yellow-50 to-pink-50 px-4 pt-4 pb-3 flex items-center gap-3">
+            {order.menuItem.imageUrl ? (
+              <img src={order.menuItem.imageUrl} alt={order.menuItem.name} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-12 h-12 rounded-xl bg-pink-100 flex items-center justify-center text-xl flex-shrink-0">🍱</div>
+            )}
+            <div className="flex-1">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <Star size={13} className="fill-yellow-400 text-yellow-400" />
+                <p className="text-xs font-bold text-yellow-700">Rate your meal</p>
+              </div>
+              <p className="font-black text-gray-900 text-sm">{order.menuItem.name}</p>
+            </div>
+            <button
+              onClick={() => setDismissedRatings(prev => new Set(prev).add(order.id))}
+              className="text-gray-300 hover:text-gray-500 text-lg leading-none flex-shrink-0"
+              aria-label="Dismiss"
+            >
+              ×
+            </button>
+          </div>
+          <div className="p-4 pt-3">
+            <ReviewForm orderId={order.id} />
+          </div>
+        </div>
+      ))}
 
       {/* ─── Active Orders ─── */}
       {activeOrders.length > 0 && (

@@ -31,7 +31,7 @@ export async function createDishRequest(formData: FormData) {
   revalidatePath("/admin");
 }
 
-export async function updateDishRequestStatus(id: string, status: "PENDING" | "ACCEPTED" | "REJECTED") {
+export async function updateDishRequestStatus(id: string, status: "PENDING" | "ACCEPTED" | "REJECTED", replyNote?: string) {
   const session = await getServerSession(authOptions);
   if (!session || (session.user as any).role !== "ADMIN") throw new Error("Unauthorized");
   const chefId = (session.user as any).id;
@@ -41,7 +41,7 @@ export async function updateDishRequestStatus(id: string, status: "PENDING" | "A
 
   await prisma.dishRequest.update({
     where: { id },
-    data: { status }
+    data: { status, replyNote: replyNote ?? null }
   });
 
   revalidatePath("/");
