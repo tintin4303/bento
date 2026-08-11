@@ -9,6 +9,7 @@ import { MonkeySlider } from "@/components/icons/MonkeySlider";
 import { LogoutButton } from "@/components/LogoutButton";
 import { MenuItemForm } from "@/components/MenuItemForm";
 import { deleteMenuItem } from "@/app/actions/menu";
+import { UserProfileBadge } from "@/components/UserProfileBadge";
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
@@ -17,18 +18,22 @@ export default async function AdminDashboard() {
     redirect("/login");
   }
 
+  const chefId = (session.user as any).id;
+
   const menuItems = await prisma.menuItem.findMany({
+    where: { chefId },
     orderBy: { category: "asc" }
   });
 
   const activeOrders = await prisma.order.findMany({
-    where: { status: { not: "COMPLETED" } },
-    include: { menuItem: true },
+    where: { status: { not: "COMPLETED" }, menuItem: { chefId } },
+    include: { menuItem: true, guest: true },
     orderBy: { targetDate: "asc" }
   });
 
   const recentReviews = await prisma.review.findMany({
-    include: { order: { include: { menuItem: true } } },
+    where: { order: { menuItem: { chefId } } },
+    include: { order: { include: { menuItem: true, guest: true } } },
     orderBy: { order: { date: "desc" } },
     take: 10
   });
@@ -38,12 +43,15 @@ export default async function AdminDashboard() {
       
       {/* Menu Management */}
       <div className="lg:col-span-1">
-        <div className="flex justify-between items-start mb-6">
+        <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Menu Setup</h1>
             <p className="text-gray-500">Manage dishes for the week.</p>
           </div>
-          <LogoutButton />
+          <div className="flex items-center gap-2">
+            <UserProfileBadge />
+            <LogoutButton />
+          </div>
         </div>
         
         <MenuItemForm />
@@ -99,8 +107,9 @@ export default async function AdminDashboard() {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h3 className="font-bold text-gray-900">{order.menuItem.name} {order.menuItem.isFavorite && "❤️"}</h3>
+                    <p className="text-xs text-gray-500 mb-1 font-semibold">For: {order.guest.displayName || order.guest.username}</p>
                     <p className="text-xs text-gray-400">
-                      For: {order.targetDate.toLocaleDateString('en-US', { timeZone: 'Asia/Bangkok', weekday: 'short', month: 'short', day: 'numeric' })}
+                      Date: {order.targetDate.toLocaleDateString('en-US', { timeZone: 'Asia/Bangkok', weekday: 'short', month: 'short', day: 'numeric' })}
                     </p>
                   </div>
                   <span className="text-xs font-bold px-2 py-1 bg-pink-100 text-secondary rounded-full">

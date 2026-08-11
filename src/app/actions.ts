@@ -2,6 +2,8 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function toggleMenuItemAvailability(id: string, isAvailable: boolean) {
   await prisma.menuItem.update({
@@ -13,9 +15,14 @@ export async function toggleMenuItemAvailability(id: string, isAvailable: boolea
 }
 
 export async function createOrder(menuItemId: string, notes?: string, targetDateStr?: string) {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== "USER") throw new Error("Unauthorized");
+  const guestId = (session.user as any).id;
+
   await prisma.order.create({
     data: {
       menuItemId,
+      guestId,
       notes,
       targetDate: targetDateStr ? new Date(targetDateStr) : new Date(),
     }

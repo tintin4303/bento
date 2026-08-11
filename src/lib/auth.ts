@@ -33,7 +33,11 @@ export const authOptions: NextAuthOptions = {
         return {
           id: user.id,
           name: user.username,
-          role: user.role
+          role: user.role,
+          displayName: user.displayName,
+          avatarUrl: user.avatarUrl,
+          chefCode: user.chefCode,
+          connectedChefId: user.connectedChefId,
         };
       }
     })
@@ -43,6 +47,10 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
+        token.displayName = (user as any).displayName;
+        token.avatarUrl = (user as any).avatarUrl;
+        token.chefCode = (user as any).chefCode;
+        token.connectedChefId = (user as any).connectedChefId;
       }
       return token;
     },
@@ -50,6 +58,10 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         (session.user as any).id = token.id as string;
         (session.user as any).role = token.role as string;
+        (session.user as any).displayName = token.displayName as string | null;
+        (session.user as any).avatarUrl = token.avatarUrl as string | null;
+        (session.user as any).chefCode = token.chefCode as string | null;
+        (session.user as any).connectedChefId = token.connectedChefId as string | null;
       }
       return session;
     }

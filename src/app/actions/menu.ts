@@ -4,8 +4,14 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { put, del } from "@vercel/blob";
 import { Category } from "@/generated/prisma/client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function createMenuItem(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== "ADMIN") throw new Error("Unauthorized");
+  const chefId = (session.user as any).id;
+
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
   const category = formData.get("category") as Category;
@@ -14,7 +20,7 @@ export async function createMenuItem(formData: FormData) {
   let imageUrl = null;
   
   if (image && image.size > 0) {
-    const blob = await put(image.name, image, {
+    const blob = await put(`menu_${chefId}_${image.name}`, image, {
       access: 'public',
     });
     imageUrl = blob.url;
@@ -26,6 +32,7 @@ export async function createMenuItem(formData: FormData) {
       description,
       category,
       imageUrl,
+      chefId,
     }
   });
   

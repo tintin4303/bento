@@ -9,6 +9,7 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { CancelButton } from "@/components/CancelButton";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { CalendarView } from "@/components/CalendarView";
+import { UserProfileBadge } from "@/components/UserProfileBadge";
 import Link from "next/link";
 
 export default async function Dashboard() {
@@ -18,20 +19,25 @@ export default async function Dashboard() {
     redirect("/login");
   }
 
-  if ((session.user as any).role === "ADMIN") {
+  const user = session.user as any;
+
+  if (user.role === "ADMIN") {
     redirect("/admin");
   }
 
-  const menuItems = await prisma.menuItem.findMany({
-    where: { isAvailableThisWeek: true },
+  // If the guest is not connected to any chef yet, don't crash, just show empty
+  const connectedChefId = user.connectedChefId;
+
+  const menuItems = connectedChefId ? await prisma.menuItem.findMany({
+    where: { isAvailableThisWeek: true, chefId: connectedChefId },
     orderBy: [
       { isFavorite: "desc" },
       { category: "asc" }
     ]
-  });
+  }) : [];
 
   const activeOrders = await prisma.order.findMany({
-    where: { status: { not: "COMPLETED" } },
+    where: { status: { not: "COMPLETED" }, guestId: user.id },
     include: { menuItem: true },
     orderBy: { targetDate: "asc" }
   });
@@ -62,9 +68,12 @@ export default async function Dashboard() {
         </div>
       )}
 
-      <div className="flex justify-between items-start mb-2">
+      <div className="flex justify-between items-center mb-2">
         <h1 className="text-3xl font-bold text-gray-900">This Week's Menu</h1>
-        <LogoutButton />
+        <div className="flex items-center gap-2">
+          <UserProfileBadge />
+          <LogoutButton />
+        </div>
       </div>
       <div className="flex justify-between items-center mb-8">
         <p className="text-gray-500">Select your lunch for the week! ❤️</p>

@@ -74,6 +74,10 @@ export default function LoginPage() {
             {loading ? "Logging in..." : "Login"}
           </Button>
         </form>
+
+        <p className="text-center text-sm text-gray-500 mt-6 font-medium">
+          Don't have an account? <a href="/register" className="text-secondary font-bold hover:underline">Sign up</a>
+        </p>
       </Card>
     </div>
   );

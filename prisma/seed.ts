@@ -1,65 +1,48 @@
-import { PrismaClient } from '../src/generated/prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
-import { Pool } from 'pg'
+// @ts-nocheck
+import { PrismaClient } from '../src/generated/prisma'
 import bcrypt from 'bcryptjs'
-import "dotenv/config";
 
-const connectionString = process.env.DATABASE_URL
-const pool = new Pool({ connectionString })
-const adapter = new PrismaPg(pool)
-const prisma = new PrismaClient({ adapter })
+const prisma = new PrismaClient()
 
 async function main() {
-  console.log("Starting seeding...")
-  // clear existing
-  await prisma.review.deleteMany()
-  await prisma.order.deleteMany()
-  await prisma.menuItem.deleteMany()
-  await prisma.user.deleteMany()
-
-  // create users
-  const adminPassword = await bcrypt.hash('chef123', 10)
+  const hashedPassword = await bcrypt.hash('chef123', 10)
   const guestPassword = await bcrypt.hash('guest123', 10)
 
-  await prisma.user.create({
-    data: {
-      username: "guest",
+  // Demo Chef
+  const chef = await prisma.user.upsert({
+    where: { username: 'chef' },
+    update: {},
+    create: {
+      username: 'chef',
+      password: hashedPassword,
+      role: 'ADMIN',
+      displayName: 'Master Chef',
+      chefCode: 'CHEF99',
+    },
+  })
+
+  // Demo Guest
+  const guest = await prisma.user.upsert({
+    where: { username: 'guest' },
+    update: {},
+    create: {
+      username: 'guest',
       password: guestPassword,
-      role: "USER"
-    }
-  })
-  
-  await prisma.user.create({
-    data: { username: 'chef', password: adminPassword, role: 'ADMIN' }
+      role: 'USER',
+      displayName: 'My Cutie',
+      connectedChefId: chef.id,
+    },
   })
 
-  // create menu items based on likes
-  const menuItems = [
-    { name: 'Krapao', description: 'Dry beef', category: 'MAIN' },
-    { name: 'Steak', description: 'Medium Rare', category: 'MAIN' },
-    { name: 'Salad', description: 'With sesame dressing', category: 'SIDE' },
-    { name: 'Grilled Chicken', description: 'Healthy and lean', category: 'MAIN' },
-    { name: 'Fried Chicken', description: 'Not too oily!', category: 'MAIN' },
-    { name: 'Corn', description: 'With butter and condensed milk', category: 'SIDE' },
-    { name: 'Laos Som Tum', description: 'Spicy and sour', category: 'SIDE' },
-    { name: 'Chicken Soup', description: 'With coconut milk', category: 'MAIN' },
-    { name: 'Greek Yogurt', description: 'With biscoff', category: 'DESSERT' },
-    { name: 'Steamed Purple Potatoes', description: 'Purple inside-out', category: 'SIDE' },
-    { name: 'Coconut Ice Cream', description: 'With rice', category: 'DESSERT' },
-  ]
-
-  for (const item of menuItems) {
-    await prisma.menuItem.create({
-      data: {
-        name: item.name,
-        description: item.description,
-        category: item.category as any,
-        isAvailableThisWeek: true
-      }
-    })
-  }
-
-  console.log("Database seeded successfully!")
+  console.log({ chef, guest })
 }
 
-main().catch(e => { console.error(e); process.exit(1) })
+main()
+  .then(async () => {
+    await prisma.$disconnect()
+  })
+  .catch(async (e) => {
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit(1)
+  })

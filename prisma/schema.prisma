@@ -13,10 +13,25 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(uuid())
-  username String  @unique
-  password String  // Hashed password
-  role     Role    @default(USER)
+  id              String   @id @default(uuid())
+  username        String   @unique
+  password        String   // Hashed password
+  role            Role     @default(USER)
+  
+  // Profile info
+  displayName     String?
+  avatarUrl       String?
+
+  // If role is ADMIN (Chef)
+  chefCode        String?  @unique
+  
+  // If role is USER (Guest)
+  connectedChefId String?
+  connectedChef   User?    @relation("ChefToGuest", fields: [connectedChefId], references: [id])
+  guests          User[]   @relation("ChefToGuest")
+
+  menuItems       MenuItem[]
+  orders          Order[]
 }
 
 enum Role {
@@ -32,6 +47,10 @@ model MenuItem {
   category            Category
   isAvailableThisWeek Boolean  @default(false)
   isFavorite          Boolean  @default(false)
+  
+  chefId              String
+  chef                User     @relation(fields: [chefId], references: [id], onDelete: Cascade)
+  
   orders              Order[]
 }
 
@@ -46,6 +65,10 @@ model Order {
   id         String      @id @default(uuid())
   menuItemId String
   menuItem   MenuItem    @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  
+  guestId    String
+  guest      User        @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  
   date       DateTime    @default(now())
   targetDate DateTime    @default(now())
   status     OrderStatus @default(PENDING)

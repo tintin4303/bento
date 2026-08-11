@@ -14,8 +14,10 @@ export default async function HistoryPage() {
     redirect("/login");
   }
 
+  const guestId = (session.user as any).id;
+
   const completedOrders = await prisma.order.findMany({
-    where: { status: "COMPLETED" },
+    where: { status: "COMPLETED", guestId },
     include: { 
       menuItem: true,
       review: true
