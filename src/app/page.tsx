@@ -49,7 +49,7 @@ export default async function Dashboard() {
                 <div>
                   <h3 className="font-bold text-gray-900">{order.menuItem.name}</h3>
                   <p className="text-xs text-gray-500 font-semibold mb-1">
-                    For: {order.targetDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
+                    For: {order.targetDate.toLocaleDateString('en-US', { timeZone: 'Asia/Bangkok', weekday: 'long', month: 'short', day: 'numeric' })}
                   </p>
                   <p className="text-xs text-gray-500">
                     Status: <strong className="text-secondary">{order.status}</strong>

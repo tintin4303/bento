@@ -100,7 +100,7 @@ export default async function AdminDashboard() {
                   <div>
                     <h3 className="font-bold text-gray-900">{order.menuItem.name} {order.menuItem.isFavorite && "❤️"}</h3>
                     <p className="text-xs text-gray-400">
-                      For: {order.targetDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                      For: {order.targetDate.toLocaleDateString('en-US', { timeZone: 'Asia/Bangkok', weekday: 'short', month: 'short', day: 'numeric' })}
                     </p>
                   </div>
                   <span className="text-xs font-bold px-2 py-1 bg-pink-100 text-secondary rounded-full">
@@ -172,7 +172,7 @@ export default async function AdminDashboard() {
                     "{review.feedback}"
                   </p>
                 )}
-                <p className="text-xs text-gray-400 mt-2">{review.order.date.toLocaleDateString()}</p>
+                <p className="text-xs text-gray-400 mt-2">{review.order.date.toLocaleDateString('en-US', { timeZone: 'Asia/Bangkok' })}</p>
               </Card>
             ))}
           </div>

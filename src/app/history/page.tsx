@@ -51,7 +51,7 @@ export default async function HistoryPage() {
                   )}
                   <div>
                     <h3 className="text-lg font-bold text-gray-900">{order.menuItem.name}</h3>
-                    <p className="text-xs text-gray-400">Delivered: {order.targetDate.toLocaleDateString()}</p>
+                    <p className="text-xs text-gray-400">Delivered: {order.targetDate.toLocaleDateString('en-US', { timeZone: 'Asia/Bangkok' })}</p>
                     {order.notes && <p className="text-sm text-gray-600 mt-2 italic">Your Notes: "{order.notes}"</p>}
                     
                     {order.chefNote && (
