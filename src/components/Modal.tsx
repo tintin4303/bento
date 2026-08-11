@@ -74,7 +74,7 @@ export function Modal({ id, isOpen, onClose, title, children }: ModalProps) {
       closedby="any" 
       aria-labelledby={`${id}-title`}
       onClose={handleClose}
-      className="p-0 rounded-2xl shadow-2xl backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-lg w-full m-auto border-0 focus:outline-none bg-white open:animate-in open:fade-in open:zoom-in-95"
+      className="p-0 rounded-2xl shadow-2xl backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-lg w-[calc(100%-2rem)] md:w-full m-auto border-0 focus:outline-none bg-white open:animate-in open:fade-in open:zoom-in-95"
     >
       <div className="bg-white p-6 w-full max-h-[85vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6 sticky top-0 bg-white/90 backdrop-blur pb-2 z-10 border-b border-gray-100">
