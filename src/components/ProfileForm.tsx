@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { updateProfile } from "@/app/actions/profile";
 import { Button } from "@/components/ui/Button";
+import { X } from "lucide-react";
 
 interface ProfileFormProps {
   user: {
@@ -11,6 +13,95 @@ interface ProfileFormProps {
     chefCode?: string | null;
   };
   isChef: boolean;
+}
+
+function TagsInput({ 
+  name, 
+  label, 
+  initialTags, 
+  placeholder,
+  theme = "pink"
+}: { 
+  name: string; 
+  label: string; 
+  initialTags: string[]; 
+  placeholder: string;
+  theme?: "pink" | "green" | "red";
+}) {
+  const [tags, setTags] = useState<string[]>(initialTags);
+  const [input, setInput] = useState("");
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addTag();
+    }
+  };
+
+  const addTag = () => {
+    const val = input.trim();
+    if (val && !tags.includes(val)) {
+      setTags([...tags, val]);
+    }
+    setInput("");
+  };
+
+  const removeTag = (indexToRemove: number) => {
+    setTags(tags.filter((_, i) => i !== indexToRemove));
+  };
+
+  const colorStyles = {
+    pink: "bg-pink-50 text-secondary border-pink-100",
+    green: "bg-green-50 text-green-700 border-green-100",
+    red: "bg-red-50 text-red-700 border-red-100",
+  }[theme];
+
+  return (
+    <div>
+      <label className="block text-sm font-bold text-gray-700 mb-2">{label}</label>
+      
+      <div className="flex flex-wrap gap-2 mb-2">
+        {tags.map((tag, i) => (
+          <span 
+            key={i} 
+            className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full border ${colorStyles}`}
+          >
+            {tag}
+            <button
+              type="button"
+              onClick={() => removeTag(i)}
+              className="hover:opacity-70 transition-opacity ml-1"
+            >
+              <X size={12} />
+            </button>
+          </span>
+        ))}
+      </div>
+
+      <div className="flex gap-2">
+        <input 
+          type="text" 
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={addTag}
+          className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 transition-all text-sm"
+          placeholder={placeholder}
+        />
+        <Button 
+          type="button" 
+          onClick={addTag}
+          variant="outline"
+          className="text-xs px-4 py-0"
+        >
+          Add
+        </Button>
+      </div>
+
+      {/* Hidden input to submit the comma-separated array to the server action */}
+      <input type="hidden" name={name} value={tags.join(",")} />
+    </div>
+  );
 }
 
 export function ProfileForm({ user, isChef }: ProfileFormProps) {
@@ -36,54 +127,50 @@ export function ProfileForm({ user, isChef }: ProfileFormProps) {
         </div>
       )}
 
-      <form action={updateProfile} className="space-y-4 w-full">
-        <div>
-          <label className="block text-sm font-bold text-gray-700 mb-1">Display Name</label>
-          <input 
-            name="displayName" 
-            type="text" 
-            defaultValue={user.displayName || ""} 
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-pink-100 transition-all font-medium"
-            placeholder="e.g. Master Chef"
-          />
-        </div>
+      <form action={updateProfile} className="space-y-6 w-full">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-1">Display Name</label>
+            <input 
+              name="displayName" 
+              type="text" 
+              defaultValue={user.displayName || ""} 
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 transition-all font-medium"
+              placeholder="e.g. Master Chef"
+            />
+          </div>
 
-        <div>
-          <label className="block text-sm font-bold text-gray-700 mb-1">Update Avatar Picture</label>
-          <input 
-            name="avatar" 
-            type="file" 
-            accept="image/*"
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-secondary transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-secondary hover:file:bg-pink-100"
-          />
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-1">Update Avatar Picture</label>
+            <input 
+              name="avatar" 
+              type="file" 
+              accept="image/*"
+              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-secondary transition-all file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-pink-50 file:text-secondary hover:file:bg-pink-100 text-sm text-gray-500"
+            />
+          </div>
         </div>
 
         {!isChef && (
-          <div className="space-y-4 pt-2">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">I love eating... (Likes)</label>
-              <input 
-                name="likes" 
-                type="text" 
-                defaultValue={(user as any).likes?.join(", ") || ""} 
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-pink-100 transition-all text-sm"
-                placeholder="e.g. Sushi, Steak, Spicy food (comma separated)"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">I can't stand... (Dislikes)</label>
-              <input 
-                name="dislikes" 
-                type="text" 
-                defaultValue={(user as any).dislikes?.join(", ") || ""} 
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-pink-100 transition-all text-sm"
-                placeholder="e.g. Cilantro, Mushrooms (comma separated)"
-              />
-            </div>
+          <div className="space-y-6 pt-4 border-t border-pink-50">
+            <TagsInput 
+              name="likes" 
+              label="I love eating... (Likes)" 
+              initialTags={(user as any).likes || []} 
+              placeholder="e.g. Sushi, Steak"
+              theme="green"
+            />
+            <TagsInput 
+              name="dislikes" 
+              label="I can't stand... (Dislikes)" 
+              initialTags={(user as any).dislikes || []} 
+              placeholder="e.g. Cilantro, Mushrooms"
+              theme="red"
+            />
           </div>
         )}
 
-        <Button type="submit" variant="primary" className="w-full py-3 text-lg mt-4 shadow-lg shadow-pink-200">
+        <Button type="submit" variant="primary" className="w-full py-3 text-lg mt-6 shadow-lg shadow-pink-200">
           Save Profile
         </Button>
       </form>
