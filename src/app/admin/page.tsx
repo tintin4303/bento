@@ -11,6 +11,7 @@ import { ChefMenu } from "@/components/ChefMenu";
 import { FeedbackInbox } from "@/components/FeedbackInbox";
 import { DishRequestInbox } from "@/components/DishRequestInbox";
 import { ProfileForm } from "@/components/ProfileForm";
+import { ConnectedGuestsList } from "@/components/ConnectedGuestsList";
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
@@ -23,6 +24,10 @@ export default async function AdminDashboard() {
 
   const dbUser = await prisma.user.findUnique({ where: { id: chefId } });
   if (!dbUser) redirect("/login");
+
+  const connectedGuests = await prisma.user.findMany({
+    where: { connectedChefId: chefId }
+  });
 
   const menuItems = await prisma.menuItem.findMany({
     where: { chefId },
@@ -51,6 +56,7 @@ export default async function AdminDashboard() {
   const feedbackNode = <FeedbackInbox recentReviews={recentReviews as any} />;
   const dishRequestNode = <DishRequestInbox pendingRequests={pendingRequests as any} />;
   const profileNode = <ProfileForm user={dbUser} isChef={true} />;
+  const guestsNode = <ConnectedGuestsList guests={connectedGuests as any} />;
 
   return (
     <div className="p-4 max-w-6xl mx-auto w-full pt-10">
@@ -64,6 +70,7 @@ export default async function AdminDashboard() {
           feedbackNode={feedbackNode} 
           dishRequestNode={dishRequestNode} 
           profileNode={profileNode} 
+          guestsNode={guestsNode}
         />
       </div>
 

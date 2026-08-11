@@ -12,10 +12,11 @@ import { GuestMenu } from "@/components/GuestMenu";
 import { HistoryList } from "@/components/HistoryList";
 import { ProfileForm } from "@/components/ProfileForm";
 import { DishRequestForm } from "@/components/DishRequestForm";
+import { ConnectedChefProfile } from "@/components/ConnectedChefProfile";
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions);
-
+  
   if (!session) {
     redirect("/login");
   }
@@ -29,8 +30,8 @@ export default async function Dashboard() {
   const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
   if (!dbUser) redirect("/login");
 
-  // If the guest is not connected to any chef yet, don't crash, just show empty
   const connectedChefId = user.connectedChefId;
+  const connectedChef = connectedChefId ? await prisma.user.findUnique({ where: { id: connectedChefId } }) : null;
 
   const menuItems = connectedChefId ? await prisma.menuItem.findMany({
     where: { isAvailableThisWeek: true, chefId: connectedChefId },
@@ -58,7 +59,6 @@ export default async function Dashboard() {
     orderBy: { targetDate: "desc" }
   });
 
-  // Nodes for Modals
   const historyNode = <HistoryList completedOrders={completedOrders as any} />;
   
   const dishRequestNode = (
@@ -89,6 +89,7 @@ export default async function Dashboard() {
   );
 
   const profileNode = <ProfileForm user={dbUser} isChef={false} />;
+  const chefNode = <ConnectedChefProfile chef={connectedChef as any} />;
 
   return (
     <div className="p-4 max-w-2xl mx-auto w-full pt-10 overflow-hidden">
@@ -102,6 +103,7 @@ export default async function Dashboard() {
           historyNode={historyNode} 
           dishRequestNode={dishRequestNode} 
           profileNode={profileNode} 
+          chefNode={chefNode}
         />
       </div>
 
