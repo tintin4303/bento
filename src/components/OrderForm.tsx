@@ -45,7 +45,6 @@ export function OrderForm({ menuItem, selectedDate, onScrollToCalendar, onAddToC
         onClick={onScrollToCalendar}
         className="flex items-center gap-2 text-sm font-semibold text-secondary hover:text-pink-700 transition-colors group mt-2"
       >
-        <CalendarDays size={16} className="group-hover:scale-110 transition-transform" />
         Pick a delivery date above to order
       </button>
     );
