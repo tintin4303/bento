@@ -1,10 +1,12 @@
 "use client";
 
-import { useOptimistic, startTransition } from "react";
+import { useOptimistic, startTransition, useState } from "react";
 import { MenuItem } from "@/generated/prisma/client";
 import { toggleMenuItemAvailability } from "@/app/actions";
 import { createMenuItemOption, deleteMenuItemOption, deleteMenuItem } from "@/app/actions/menu";
 import { MenuItemForm } from "@/components/MenuItemForm";
+import { EditMenuItemForm } from "./EditMenuItemForm";
+import { Edit2 } from "lucide-react";
 
 interface ChefMenuClientProps {
   initialItems: any[];
@@ -23,6 +25,9 @@ export function ChefMenuClient({ initialItems }: ChefMenuClientProps) {
       if (action.type === "ADD") {
         return [...state, action.newItem!];
       }
+      if (action.type === "UPDATE") {
+        return state.map(i => i.id === action.newItem.id ? { ...i, ...action.newItem } : i);
+      }
       if (action.type === "ADD_OPTION") {
         return state.map(i => i.id === action.id ? { ...i, options: [...(i.options || []), action.option] } : i);
       }
@@ -33,17 +38,19 @@ export function ChefMenuClient({ initialItems }: ChefMenuClientProps) {
     }
   );
 
-  const handleToggle = (id: string, val: boolean) => {
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+
+  const handleToggle = (id: string, current: boolean) => {
+    dispatchOptimistic({ type: "TOGGLE", id, val: !current });
     startTransition(() => {
-      dispatchOptimistic({ type: "TOGGLE", id, val });
-      toggleMenuItemAvailability(id, val);
+      toggleMenuItemAvailability(id, !current);
     });
   };
 
   const handleDelete = (id: string, imageUrl: string | null) => {
-    if (!confirm("Delete this dish forever?")) return;
+    if (!confirm("Are you sure you want to delete this dish?")) return;
+    dispatchOptimistic({ type: "DELETE", id });
     startTransition(() => {
-      dispatchOptimistic({ type: "DELETE", id });
       deleteMenuItem(id, imageUrl);
     });
   };
@@ -70,47 +77,68 @@ export function ChefMenuClient({ initialItems }: ChefMenuClientProps) {
   const hiddenItems = optimisticItems.filter(i => !i.isAvailableThisWeek);
 
   const renderItemCard = (item: any, isHidden: boolean) => (
-    <div key={item.id} className={`bg-white rounded-2xl border border-pink-50 p-4 flex gap-3 items-start ${isHidden ? 'opacity-60 grayscale' : 'shadow-sm'}`}>
-      {item.imageUrl ? (
-        <img src={item.imageUrl} alt={item.name} className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
-      ) : (
-        <div className="w-14 h-14 rounded-xl bg-pink-50 flex-shrink-0 flex items-center justify-center text-2xl">🍱</div>
-      )}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="font-bold text-gray-900 text-sm truncate">{item.name}</p>
-          {item.optionsRequired && <span className="text-[9px] bg-red-50 text-red-600 px-1.5 rounded uppercase font-bold">Req</span>}
-        </div>
-        <span className="text-[10px] font-bold text-gray-400 uppercase">{item.category}</span>
+    editingItemId === item.id ? (
+      <EditMenuItemForm 
+        key={item.id} 
+        item={item} 
+        onCancel={() => setEditingItemId(null)}
+        onOptimisticUpdate={(updatedItem) => {
+          dispatchOptimistic({ type: "UPDATE", newItem: updatedItem });
+        }}
+      />
+    ) : (
+      <div key={item.id} className={`bg-white rounded-2xl border border-pink-50 p-4 flex gap-3 items-start relative group ${isHidden ? 'opacity-60 grayscale' : 'shadow-sm'}`}>
         
-        {/* Options UI */}
-        <div className="mt-2 flex flex-wrap gap-1">
-          {item.options?.map((opt: any) => (
-            <span key={opt.id} className="text-[9px] font-bold bg-pink-50 text-secondary px-2 py-0.5 rounded-full flex items-center gap-1 border border-pink-100">
-              {opt.label}
-              <button onClick={() => handleRemoveOption(item.id, opt.id)} className="hover:text-pink-800">✕</button>
-            </span>
-          ))}
-          <button onClick={() => handleAddOption(item.id)} className="text-[9px] font-bold text-gray-400 bg-gray-50 hover:bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
-            + option
+        {/* Edit button */}
+        <button
+          onClick={() => setEditingItemId(item.id)}
+          className="absolute top-2 right-2 text-gray-300 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all z-10 p-1 bg-white rounded-md shadow-sm"
+          title="Edit dish"
+        >
+          <Edit2 size={14} />
+        </button>
+
+        {item.imageUrl ? (
+          <img src={item.imageUrl} alt={item.name} className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
+        ) : (
+          <div className="w-14 h-14 rounded-xl bg-pink-50 flex-shrink-0 flex items-center justify-center text-2xl">🍱</div>
+        )}
+        <div className="flex-1 min-w-0 pr-6">
+          <div className="flex items-center gap-2">
+            <p className="font-bold text-gray-900 text-sm truncate">{item.name}</p>
+            {item.optionsRequired && <span className="text-[9px] bg-red-50 text-red-600 px-1.5 rounded uppercase font-bold">Req</span>}
+          </div>
+          <span className="text-[10px] font-bold text-gray-400 uppercase">{item.category}</span>
+          
+          {/* Options UI */}
+          <div className="mt-2 flex flex-wrap gap-1">
+            {item.options?.map((opt: any) => (
+              <span key={opt.id} className="text-[9px] font-bold bg-pink-50 text-secondary px-2 py-0.5 rounded-full flex items-center gap-1 border border-pink-100">
+                {opt.label}
+                <button onClick={() => handleRemoveOption(item.id, opt.id)} className="hover:text-pink-800">✕</button>
+              </span>
+            ))}
+            <button onClick={() => handleAddOption(item.id)} className="text-[9px] font-bold text-gray-400 bg-gray-50 hover:bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+              + option
+            </button>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1.5 flex-shrink-0 ml-auto">
+          <button 
+            onClick={() => handleToggle(item.id, isHidden)}
+            className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors w-full ${isHidden ? 'text-secondary bg-pink-50 hover:bg-pink-100' : 'text-gray-500 bg-gray-100 hover:bg-gray-200'}`}
+          >
+            {isHidden ? 'Show' : 'Hide'}
+          </button>
+          <button 
+            onClick={() => handleDelete(item.id, item.imageUrl)}
+            className="text-[10px] font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg transition-colors w-full"
+          >
+            Delete
           </button>
         </div>
       </div>
-      <div className="flex flex-col gap-1.5 flex-shrink-0 ml-auto">
-        <button 
-          onClick={() => handleToggle(item.id, isHidden)}
-          className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors w-full ${isHidden ? 'text-secondary bg-pink-50 hover:bg-pink-100' : 'text-gray-500 bg-gray-100 hover:bg-gray-200'}`}
-        >
-          {isHidden ? 'Show' : 'Hide'}
-        </button>
-        <button 
-          onClick={() => handleDelete(item.id, item.imageUrl)}
-          className="text-[10px] font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg transition-colors w-full"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
+    )
   );
 
   return (

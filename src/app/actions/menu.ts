@@ -44,6 +44,33 @@ export async function createMenuItem(formData: FormData) {
   revalidatePath("/admin");
 }
 
+export async function updateMenuItem(id: string, formData: FormData, existingImageUrl: string | null) {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== "ADMIN") throw new Error("Unauthorized");
+  
+  const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+  const category = formData.get("category") as Category;
+  const image = formData.get("image") as File | null;
+  const chefId = (session.user as any).id;
+  
+  let imageUrl = existingImageUrl;
+  if (image && image.size > 0) {
+    if (existingImageUrl) {
+      try { await del(existingImageUrl); } catch (e) {}
+    }
+    const blob = await put(`menu_${chefId}_${image.name}`, image, { access: "public" });
+    imageUrl = blob.url;
+  }
+
+  await prisma.menuItem.update({
+    where: { id },
+    data: { name, description, category, imageUrl },
+  });
+
+  revalidatePath("/admin");
+}
+
 export async function createMenuItemOption(menuItemId: string, label: string) {
   await prisma.menuItemOption.create({
     data: { menuItemId, label }
