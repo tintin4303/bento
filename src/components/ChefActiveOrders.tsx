@@ -46,8 +46,7 @@ export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
         const cfg = STATUS_CONFIG[currentStatus] ?? STATUS_CONFIG.PENDING;
         const noteValue = chefNotes[cart.id] ?? cart.chefNote ?? "";
         return (
-          <div key={cart.id} className="bg-white rounded-2xl border border-pink-50 shadow-sm overflow-hidden flex flex-col">
-            <div className="h-1 bg-gradient-to-r from-secondary to-pink-300" />
+          <div key={cart.id} className="bg-white rounded-2xl border border-pink-50 shadow-sm overflow-hidden flex flex-col min-w-0">
 
             <div className="p-4 flex flex-col gap-3 flex-1">
               {/* Header */}
@@ -59,7 +58,7 @@ export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
                   <div className="min-w-0 flex-1">
                     <p className="font-black text-gray-900 text-sm leading-tight truncate">{cart.guest?.displayName || cart.guest?.username}</p>
                     <p className="text-[10px] text-gray-400 font-semibold mt-0.5 truncate">
-                      📅 {new Date(cart.targetDate).toLocaleDateString("en-US", { timeZone: "Asia/Bangkok", weekday: "short", month: "short", day: "numeric" })}
+                      {new Date(cart.targetDate).toLocaleDateString("en-US", { timeZone: "Asia/Bangkok", weekday: "short", month: "short", day: "numeric" })}
                     </p>
                   </div>
                 </div>
@@ -129,7 +128,7 @@ export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
                   }}
                   className="flex-1 text-[11px] font-bold py-2 rounded-xl bg-secondary text-white hover:bg-pink-600 transition-colors"
                 >
-                  Done ✓
+                  Done
                 </button>
               </div>
             </div>
