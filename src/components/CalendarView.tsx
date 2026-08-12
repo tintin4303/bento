@@ -93,22 +93,37 @@ export function CalendarView({ orders, selectedDate, onSelectDate }: CalendarVie
 
               {/* Order indicator dots */}
               {hasOrder && (
-                <div className="flex flex-col gap-1 w-full mt-1">
-                  {dayOrders.flatMap(cart => cart.orders || []).map((o: any) => (
-                    <div key={o.id} className="relative mx-auto">
-                      {o.menuItem?.imageUrl ? (
-                        <img
-                          src={o.menuItem.imageUrl}
-                          alt={o.menuItem.name}
-                          className={`w-8 h-8 rounded-full object-cover border-2 ${isSelected ? "border-white/50" : "border-white"} shadow-sm`}
-                        />
-                      ) : (
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] shadow-sm ${isSelected ? "bg-white/20" : "bg-pink-200"}`}>
-                          🍱
+                <div className="flex flex-col gap-1 w-full mt-1 items-center">
+                  {(() => {
+                    const allDayOrders = dayOrders.flatMap(cart => cart.orders || []);
+                    if (allDayOrders.length === 0) return null;
+                    
+                    const firstOrder = allDayOrders[0];
+                    const extraCount = allDayOrders.length - 1;
+                    
+                    return (
+                      <>
+                        <div key={firstOrder.id} className="relative mx-auto">
+                          {firstOrder.menuItem?.imageUrl ? (
+                            <img
+                              src={firstOrder.menuItem.imageUrl}
+                              alt={firstOrder.menuItem.name}
+                              className={`w-8 h-8 rounded-full object-cover border-2 ${isSelected ? "border-white/50" : "border-white"} shadow-sm`}
+                            />
+                          ) : (
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] shadow-sm ${isSelected ? "bg-white/20" : "bg-pink-200"}`}>
+                              🍱
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                        {extraCount > 0 && (
+                          <span className={`text-[10px] font-black -mt-0.5 leading-none ${isSelected ? "text-white/90" : "text-secondary"}`}>
+                            +{extraCount}
+                          </span>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               )}
 
