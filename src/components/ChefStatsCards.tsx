@@ -55,11 +55,11 @@ export function ChefStatsCards({
         <div
           key={stat.label}
           onClick={stat.onClick}
-          className="bg-white rounded-2xl border border-pink-50 shadow-sm p-5 cursor-pointer hover:border-pink-200 hover:shadow-md transition-all active:scale-95"
+          className="bg-white rounded-2xl border border-pink-50 shadow-sm p-5 cursor-pointer hover:border-pink-200 hover:shadow-md transition-all active:scale-95 min-w-0"
         >
           <p className="text-3xl font-black text-secondary">{stat.value}</p>
-          <p className="text-sm font-bold text-gray-800 mt-1">{stat.label}</p>
-          <p className="text-xs text-gray-400">{stat.sub}</p>
+          <p className="text-sm font-bold text-gray-800 mt-1 truncate">{stat.label}</p>
+          <p className="text-xs text-gray-400 truncate">{stat.sub}</p>
         </div>
       ))}
     </div>

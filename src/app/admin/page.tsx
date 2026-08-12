@@ -79,7 +79,7 @@ export default async function AdminDashboard() {
   const hiddenItems   = menuItems.filter(i => !i.isAvailableThisWeek);
 
   return (
-    <div className="min-h-screen bg-[#FDF2F8] overflow-x-hidden">
+    <div className="min-h-screen bg-[#FDF2F8] overflow-x-hidden w-full max-w-[100vw]">
       {/* ─── Top Nav Bar ─── */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-pink-100">
         <div className="max-w-6xl mx-auto px-5 py-3 flex justify-between items-center">
@@ -105,7 +105,7 @@ export default async function AdminDashboard() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-5 py-8 space-y-8">
+      <main className="max-w-6xl mx-auto px-5 py-8 space-y-8 min-w-0 w-full">
 
         {/* ─── Stats Row ─── */}
         <ChefStatsCards
@@ -115,15 +115,15 @@ export default async function AdminDashboard() {
         />
 
         {/* ─── Main Grid ─── */}
-        <div className="grid lg:grid-cols-5 gap-6">
+        <div className="grid lg:grid-cols-5 gap-6 min-w-0 w-full">
 
           {/* ─── LEFT: Menu Panel ─── */}
-          <div id="menu-panel" className="lg:col-span-2">
+          <div id="menu-panel" className="lg:col-span-2 min-w-0">
             <ChefMenuClient initialItems={menuItems as any} />
           </div>
 
           {/* ─── RIGHT: Active Orders ─── */}
-          <div id="active-orders" className="lg:col-span-3 space-y-4">
+          <div id="active-orders" className="lg:col-span-3 space-y-4 min-w-0">
             <div className="flex items-baseline justify-between">
               <h2 className="text-xl font-black text-gray-900">Active Orders</h2>
               <span className="text-xs text-gray-400 font-semibold">{activeOrders.length} order{activeOrders.length !== 1 ? "s" : ""}</span>

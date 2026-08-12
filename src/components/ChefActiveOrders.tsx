@@ -51,14 +51,14 @@ export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
 
             <div className="p-4 flex flex-col gap-3 flex-1">
               {/* Header */}
-              <div className="flex justify-between items-start gap-2">
+              <div className="flex justify-between items-start gap-2 w-full min-w-0">
                 <div className="flex gap-3 items-center min-w-0">
                   <div className="w-12 h-12 rounded-xl bg-pink-50 flex-shrink-0 flex items-center justify-center text-xl border border-pink-100">
                     <span className="font-black text-secondary">{cart.orders.length}</span>
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="font-black text-gray-900 text-sm leading-tight truncate">{cart.guest?.displayName || cart.guest?.username}</p>
-                    <p className="text-[10px] text-gray-400 font-semibold mt-0.5">
+                    <p className="text-[10px] text-gray-400 font-semibold mt-0.5 truncate">
                       📅 {new Date(cart.targetDate).toLocaleDateString("en-US", { timeZone: "Asia/Bangkok", weekday: "short", month: "short", day: "numeric" })}
                     </p>
                   </div>
@@ -91,7 +91,7 @@ export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
                   value={noteValue}
                   onChange={(e) => setChefNotes((prev) => ({ ...prev, [cart.id]: e.target.value }))}
                   placeholder={cart.chefNote || "Add a note for her..."}
-                  className="flex-1 text-xs px-3 py-2 border border-pink-100 rounded-lg focus:outline-none focus:border-secondary bg-white transition-colors"
+                  className="flex-1 min-w-0 text-xs px-3 py-2 border border-pink-100 rounded-lg focus:outline-none focus:border-secondary bg-white transition-colors"
                 />
                 <button
                   type="button"

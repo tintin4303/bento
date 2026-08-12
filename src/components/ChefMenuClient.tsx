@@ -95,11 +95,11 @@ export function ChefMenuClient({ initialItems }: ChefMenuClientProps) {
           <div className="w-14 h-14 rounded-xl bg-pink-50 flex-shrink-0 flex items-center justify-center text-2xl">🍱</div>
         )}
         <div className="flex-1 min-w-0 pr-6">
-          <div className="flex items-center gap-2">
-            <p className="font-bold text-gray-900 text-sm truncate">{item.name}</p>
-            {item.optionsRequired && <span className="text-[9px] bg-red-50 text-red-600 px-1.5 rounded uppercase font-bold">Req</span>}
+          <div className="flex items-center gap-2 min-w-0 w-full">
+            <p className="font-bold text-gray-900 text-sm truncate flex-1">{item.name}</p>
+            {item.optionsRequired && <span className="text-[9px] bg-red-50 text-red-600 px-1.5 rounded uppercase font-bold flex-shrink-0">Req</span>}
           </div>
-          <span className="text-[10px] font-bold text-gray-400 uppercase">{item.category}</span>
+          <span className="text-[10px] font-bold text-gray-400 uppercase truncate block">{item.category}</span>
           
           {/* Options UI */}
           <div className="mt-2 flex flex-wrap gap-1">
