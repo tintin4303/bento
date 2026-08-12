@@ -41,5 +41,6 @@ export async function GET() {
   return NextResponse.json({
     activeOrders, // Renamed to carts conceptually in UI, but keep key for polling
     unreviewedOrders: completedOrders.filter((c) => !c.review),
+    completedOrders,
   });
 }

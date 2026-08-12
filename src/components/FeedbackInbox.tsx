@@ -1,11 +1,20 @@
+"use client";
+
 import { Card } from "@/components/ui/Card";
 import { MonkeySlider } from "@/components/icons/MonkeySlider";
+import { usePolling } from "@/hooks/usePolling";
 
 interface FeedbackInboxProps {
   recentReviews: any[];
 }
 
-export function FeedbackInbox({ recentReviews }: FeedbackInboxProps) {
+export function FeedbackInbox({ recentReviews: initialReviews }: FeedbackInboxProps) {
+  const { recentReviews } = usePolling(
+    "/api/chef/reviews",
+    { recentReviews: initialReviews },
+    10000
+  );
+
   return (
     <div className="w-full">
       {recentReviews.length === 0 ? (

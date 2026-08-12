@@ -1,12 +1,21 @@
+"use client";
+
 import { Card } from "@/components/ui/Card";
 import { ReviewForm } from "@/components/ReviewForm";
 import { MonkeySlider } from "@/components/icons/MonkeySlider";
+import { usePolling } from "@/hooks/usePolling";
 
 interface HistoryListProps {
   completedOrders: any[];
 }
 
-export function HistoryList({ completedOrders }: HistoryListProps) {
+export function HistoryList({ completedOrders: initialOrders }: HistoryListProps) {
+  const { completedOrders } = usePolling(
+    "/api/orders",
+    { completedOrders: initialOrders },
+    10000
+  );
+
   return (
     <div className="w-full">
       {completedOrders.length === 0 ? (
