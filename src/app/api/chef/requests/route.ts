@@ -18,5 +18,12 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json({ pendingRequests });
+  const pastRequests = await prisma.dishRequest.findMany({
+    where: { chefId, status: { not: "PENDING" } },
+    include: { guest: true },
+    orderBy: { createdAt: "desc" },
+    take: 20, // keep the list reasonable
+  });
+
+  return NextResponse.json({ pendingRequests, pastRequests });
 }
