@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, ReactNode } from "react";
+import { useState, ReactNode, useEffect } from "react";
 import { HamburgerMenu, MenuButton } from "./HamburgerMenu";
 import { Modal } from "./Modal";
 import { Inbox, Utensils, ChefHat, Users } from "lucide-react";
@@ -14,6 +14,12 @@ interface ChefMenuProps {
 
 export function ChefMenu({ feedbackNode, dishRequestNode, profileNode, guestsNode }: ChefMenuProps) {
   const [activeModal, setActiveModal] = useState<"feedback" | "requests" | "profile" | "guests" | null>(null);
+
+  useEffect(() => {
+    const handleOpen = (e: any) => setActiveModal(e.detail);
+    window.addEventListener("openChefModal", handleOpen);
+    return () => window.removeEventListener("openChefModal", handleOpen);
+  }, []);
 
   return (
     <>

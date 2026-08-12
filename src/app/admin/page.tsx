@@ -13,6 +13,7 @@ import { ProfileForm } from "@/components/ProfileForm";
 import { ConnectedGuestsList } from "@/components/ConnectedGuestsList";
 import { ChefActiveOrders } from "@/components/ChefActiveOrders";
 import { ChefMenuClient } from "@/components/ChefMenuClient";
+import { ChefStatsCards } from "@/components/ChefStatsCards";
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string; badge: string }> = {
   PENDING:  { label: "Pending",  dot: "bg-yellow-400", badge: "bg-yellow-50  text-yellow-700 border border-yellow-200" },
@@ -107,29 +108,22 @@ export default async function AdminDashboard() {
       <main className="max-w-6xl mx-auto px-5 py-8 space-y-8">
 
         {/* ─── Stats Row ─── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[
-            { label: "Total Dishes",    value: menuItems.length,         sub: "in your menu" },
-            { label: "On This Week",    value: visibleItems.length,      sub: "available to guests" },
-            { label: "Active Orders",   value: activeOrders.length,      sub: "in progress" },
-            { label: "Dish Requests",   value: pendingRequests.length,   sub: "awaiting response" },
-          ].map(stat => (
-            <div key={stat.label} className="bg-white rounded-2xl border border-pink-50 shadow-sm p-5">
-              <p className="text-3xl font-black text-secondary">{stat.value}</p>
-              <p className="text-sm font-bold text-gray-800 mt-1">{stat.label}</p>
-              <p className="text-xs text-gray-400">{stat.sub}</p>
-            </div>
-          ))}
-        </div>
+        <ChefStatsCards
+          initialMenuItems={menuItems as any}
+          initialActiveOrders={activeOrders as any}
+          initialPendingRequests={pendingRequests as any}
+        />
 
         {/* ─── Main Grid ─── */}
         <div className="grid lg:grid-cols-5 gap-6">
 
           {/* ─── LEFT: Menu Panel ─── */}
+          <div id="menu-panel">
             <ChefMenuClient initialItems={menuItems as any} />
+          </div>
 
           {/* ─── RIGHT: Active Orders ─── */}
-          <div className="lg:col-span-3 space-y-4">
+          <div id="active-orders" className="lg:col-span-3 space-y-4">
             <div className="flex items-baseline justify-between">
               <h2 className="text-xl font-black text-gray-900">Active Orders</h2>
               <span className="text-xs text-gray-400 font-semibold">{activeOrders.length} order{activeOrders.length !== 1 ? "s" : ""}</span>
