@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { usePolling } from "@/hooks/usePolling";
-import { updateOrderStatus, updateChefNote } from "@/app/actions";
+import { updateCartStatus, updateCartChefNote } from "@/app/actions";
+
+interface ChefActiveOrdersProps {
+  initialOrders: any[];
+}
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string; badge: string }> = {
   PENDING:  { label: "Pending",  dot: "bg-yellow-400", badge: "bg-yellow-50  text-yellow-700 border border-yellow-200" },
@@ -10,10 +14,6 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string; badge: string 
   READY:    { label: "Ready",    dot: "bg-blue-400",   badge: "bg-blue-50    text-blue-700   border border-blue-200" },
   COMPLETED:{ label: "Done",     dot: "bg-green-400",  badge: "bg-green-50   text-green-700  border border-green-200" },
 };
-
-interface ChefActiveOrdersProps {
-  initialOrders: any[];
-}
 
 export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
   // Chef notes local state (ephemeral)
@@ -28,7 +28,7 @@ export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
     3000
   );
 
-  const visibleOrders = activeOrders.filter((o: any) => (optimisticStatuses[o.id] || o.status) !== "COMPLETED");
+  const visibleOrders = activeOrders.filter((cart: any) => (optimisticStatuses[cart.id] || cart.status) !== "COMPLETED");
 
   if (visibleOrders.length === 0) {
     return (
@@ -41,27 +41,25 @@ export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
 
   return (
     <div className="grid sm:grid-cols-2 gap-4">
-      {visibleOrders.map((order: any) => {
-        const currentStatus = optimisticStatuses[order.id] || order.status;
+      {visibleOrders.map((cart: any) => {
+        const currentStatus = optimisticStatuses[cart.id] || cart.status;
         const cfg = STATUS_CONFIG[currentStatus] ?? STATUS_CONFIG.PENDING;
-        const noteValue = chefNotes[order.id] ?? order.chefNote ?? "";
+        const noteValue = chefNotes[cart.id] ?? cart.chefNote ?? "";
         return (
-          <div key={order.id} className="bg-white rounded-2xl border border-pink-50 shadow-sm overflow-hidden flex flex-col">
+          <div key={cart.id} className="bg-white rounded-2xl border border-pink-50 shadow-sm overflow-hidden flex flex-col">
             <div className="h-1 bg-gradient-to-r from-secondary to-pink-300" />
 
             <div className="p-4 flex flex-col gap-3 flex-1">
               {/* Header */}
               <div className="flex justify-between items-start gap-2">
                 <div className="flex gap-3 items-center">
-                  {order.menuItem.imageUrl ? (
-                    <img src={order.menuItem.imageUrl} alt={order.menuItem.name} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
-                  ) : (
-                    <div className="w-12 h-12 rounded-xl bg-pink-50 flex-shrink-0 flex items-center justify-center text-xl">🍱</div>
-                  )}
+                  <div className="w-12 h-12 rounded-xl bg-pink-50 flex-shrink-0 flex items-center justify-center text-xl border border-pink-100">
+                    <span className="font-black text-secondary">{cart.orders.length}</span>
+                  </div>
                   <div>
-                    <p className="font-black text-gray-900 text-sm leading-tight">{order.menuItem.name}</p>
-                    <p className="text-xs text-gray-500 font-semibold mt-0.5">
-                      {order.guest.displayName || order.guest.username}
+                    <p className="font-black text-gray-900 text-sm leading-tight">{cart.guest?.displayName || cart.guest?.username}</p>
+                    <p className="text-[10px] text-gray-400 font-semibold mt-0.5">
+                      📅 {new Date(cart.targetDate).toLocaleDateString("en-US", { timeZone: "Asia/Bangkok", weekday: "short", month: "short", day: "numeric" })}
                     </p>
                   </div>
                 </div>
@@ -71,30 +69,33 @@ export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
                 </span>
               </div>
 
-              {/* Date */}
-              <p className="text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-1.5 font-medium">
-                📅 {new Date(order.targetDate).toLocaleDateString("en-US", { timeZone: "Asia/Bangkok", weekday: "long", month: "short", day: "numeric" })}
-              </p>
-
-              {/* Guest Note */}
-              {order.notes && (
-                <p className="text-xs text-gray-600 bg-pink-50 border border-pink-100 rounded-lg px-3 py-2 italic">
-                  "{order.notes}"
-                </p>
-              )}
+              {/* Items List */}
+              <div className="bg-gray-50 rounded-xl p-3 space-y-2 border border-gray-100">
+                {cart.orders.map((o: any) => (
+                  <div key={o.id} className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-gray-800">• {o.menuItem.name}</span>
+                      {o.selectedOption && (
+                        <span className="text-[9px] font-bold text-secondary bg-pink-100 px-1.5 rounded uppercase">{o.selectedOption.label}</span>
+                      )}
+                    </div>
+                    {o.notes && <p className="text-[10px] text-gray-500 italic ml-2 border-l-2 border-pink-100 pl-1.5">{o.notes}</p>}
+                  </div>
+                ))}
+              </div>
 
               {/* Chef Note */}
-              <div className="flex gap-2">
+              <div className="flex gap-2 mt-auto pt-2">
                 <input
                   type="text"
                   value={noteValue}
-                  onChange={(e) => setChefNotes((prev) => ({ ...prev, [order.id]: e.target.value }))}
-                  placeholder={order.chefNote || "Add a note for her..."}
+                  onChange={(e) => setChefNotes((prev) => ({ ...prev, [cart.id]: e.target.value }))}
+                  placeholder={cart.chefNote || "Add a note for her..."}
                   className="flex-1 text-xs px-3 py-2 border border-pink-100 rounded-lg focus:outline-none focus:border-secondary bg-white transition-colors"
                 />
                 <button
                   type="button"
-                  onClick={() => updateChefNote(order.id, noteValue)}
+                  onClick={() => updateCartChefNote(cart.id, noteValue)}
                   className="text-[10px] font-bold text-secondary bg-pink-50 hover:bg-pink-100 px-3 py-2 rounded-lg transition-colors flex-shrink-0"
                 >
                   Save
@@ -102,11 +103,11 @@ export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
               </div>
 
               {/* Status Buttons */}
-              <div className="flex gap-2 mt-auto">
+              <div className="flex gap-2">
                 <button
                   onClick={() => {
-                    setOptimisticStatuses(prev => ({ ...prev, [order.id]: "COOKING" }));
-                    updateOrderStatus(order.id, "COOKING");
+                    setOptimisticStatuses(prev => ({ ...prev, [cart.id]: "COOKING" }));
+                    updateCartStatus(cart.id, "COOKING");
                   }}
                   className="flex-1 text-[11px] font-bold py-2 rounded-xl bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-100 transition-colors"
                 >
@@ -114,8 +115,8 @@ export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
                 </button>
                 <button
                   onClick={() => {
-                    setOptimisticStatuses(prev => ({ ...prev, [order.id]: "READY" }));
-                    updateOrderStatus(order.id, "READY");
+                    setOptimisticStatuses(prev => ({ ...prev, [cart.id]: "READY" }));
+                    updateCartStatus(cart.id, "READY");
                   }}
                   className="flex-1 text-[11px] font-bold py-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-100 transition-colors"
                 >
@@ -123,8 +124,8 @@ export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
                 </button>
                 <button
                   onClick={() => {
-                    setOptimisticStatuses(prev => ({ ...prev, [order.id]: "COMPLETED" }));
-                    updateOrderStatus(order.id, "COMPLETED");
+                    setOptimisticStatuses(prev => ({ ...prev, [cart.id]: "COMPLETED" }));
+                    updateCartStatus(cart.id, "COMPLETED");
                   }}
                   className="flex-1 text-[11px] font-bold py-2 rounded-xl bg-secondary text-white hover:bg-pink-600 transition-colors"
                 >

@@ -12,9 +12,17 @@ export async function GET() {
 
   const chefId = (session.user as any).id;
 
-  const activeOrders = await prisma.order.findMany({
-    where: { status: { not: "COMPLETED" }, menuItem: { chefId } },
-    include: { menuItem: true, guest: true },
+  const activeOrders = await prisma.cart.findMany({
+    where: { status: { not: "COMPLETED" }, orders: { some: { menuItem: { chefId } } } },
+    include: {
+      guest: true,
+      orders: {
+        include: {
+          menuItem: true,
+          selectedOption: true,
+        },
+      },
+    },
     orderBy: { targetDate: "asc" },
   });
 

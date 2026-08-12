@@ -27,13 +27,14 @@ export default async function Dashboard() {
   const menuItems = connectedChefId
     ? await prisma.menuItem.findMany({
         where: { isAvailableThisWeek: true, chefId: connectedChefId },
+        include: { options: true },
         orderBy: [{ isFavorite: "desc" }, { category: "asc" }],
       })
     : [];
 
-  const activeOrders = await prisma.order.findMany({
+  const activeOrders = await prisma.cart.findMany({
     where: { status: { not: "COMPLETED" }, guestId: user.id },
-    include: { menuItem: true },
+    include: { orders: { include: { menuItem: true, selectedOption: true } } },
     orderBy: { targetDate: "asc" },
   });
 
@@ -43,14 +44,14 @@ export default async function Dashboard() {
     take: 5,
   });
 
-  const completedOrders = await prisma.order.findMany({
+  const completedOrders = await prisma.cart.findMany({
     where: { status: "COMPLETED", guestId: user.id },
-    include: { menuItem: true, review: true },
+    include: { orders: { include: { menuItem: true, selectedOption: true } }, review: true },
     orderBy: { targetDate: "desc" },
   });
 
   /* ── Unreviewed completed orders (for rating prompt on dashboard) ── */
-  const unreviewedOrders = completedOrders.filter(o => !o.review);
+  const unreviewedOrders = completedOrders.filter(c => !c.review);
 
   /* ── Modal content nodes ── */
   const historyNode = <HistoryList completedOrders={completedOrders as any} />;

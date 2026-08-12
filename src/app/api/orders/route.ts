@@ -11,20 +11,35 @@ export async function GET() {
   const userId = (session.user as any).id;
 
   const [activeOrders, completedOrders] = await Promise.all([
-    prisma.order.findMany({
+    prisma.cart.findMany({
       where: { status: { not: "COMPLETED" }, guestId: userId },
-      include: { menuItem: true },
+      include: {
+        orders: {
+          include: {
+            menuItem: true,
+            selectedOption: true,
+          }
+        },
+      },
       orderBy: { targetDate: "asc" },
     }),
-    prisma.order.findMany({
+    prisma.cart.findMany({
       where: { status: "COMPLETED", guestId: userId },
-      include: { menuItem: true, review: true },
+      include: {
+        orders: {
+          include: {
+            menuItem: true,
+            selectedOption: true,
+          }
+        },
+        review: true,
+      },
       orderBy: { targetDate: "desc" },
     }),
   ]);
 
   return NextResponse.json({
-    activeOrders,
-    unreviewedOrders: completedOrders.filter((o) => !o.review),
+    activeOrders, // Renamed to carts conceptually in UI, but keep key for polling
+    unreviewedOrders: completedOrders.filter((c) => !c.review),
   });
 }

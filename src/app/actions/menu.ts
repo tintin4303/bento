@@ -16,6 +16,10 @@ export async function createMenuItem(formData: FormData) {
   const description = formData.get("description") as string;
   const category = formData.get("category") as Category;
   const image = formData.get("image") as File | null;
+  const optionsRequired = formData.get("optionsRequired") === "true";
+  
+  const optionsStr = formData.get("options") as string;
+  const options = optionsStr ? JSON.parse(optionsStr) : [];
 
   let imageUrl = null;
   if (image && image.size > 0) {
@@ -24,10 +28,39 @@ export async function createMenuItem(formData: FormData) {
   }
 
   await prisma.menuItem.create({
-    data: { name, description, category, imageUrl, chefId },
+    data: { 
+      name, 
+      description, 
+      category, 
+      imageUrl, 
+      chefId,
+      optionsRequired,
+      options: {
+        create: options.map((label: string) => ({ label }))
+      }
+    },
   });
 
-  // Menu list is server-rendered on the admin page — revalidate only that.
+  revalidatePath("/admin");
+}
+
+export async function createMenuItemOption(menuItemId: string, label: string) {
+  await prisma.menuItemOption.create({
+    data: { menuItemId, label }
+  });
+  revalidatePath("/admin");
+}
+
+export async function deleteMenuItemOption(id: string) {
+  await prisma.menuItemOption.delete({ where: { id } });
+  revalidatePath("/admin");
+}
+
+export async function setOptionsRequired(menuItemId: string, required: boolean) {
+  await prisma.menuItem.update({
+    where: { id: menuItemId },
+    data: { optionsRequired: required }
+  });
   revalidatePath("/admin");
 }
 

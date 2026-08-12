@@ -35,6 +35,7 @@ model User {
 
   menuItems       MenuItem[]
   orders          Order[]
+  carts           Cart[]
 
   guestDishRequests DishRequest[] @relation("GuestDishRequests")
   chefDishRequests  DishRequest[] @relation("ChefDishRequests")
@@ -46,18 +47,28 @@ enum Role {
 }
 
 model MenuItem {
-  id                  String   @id @default(uuid())
+  id                  String           @id @default(uuid())
   name                String
   description         String?
   imageUrl            String?
   category            Category
-  isAvailableThisWeek Boolean  @default(false)
-  isFavorite          Boolean  @default(false)
+  isAvailableThisWeek Boolean          @default(false)
+  isFavorite          Boolean          @default(false)
+  optionsRequired     Boolean          @default(false)
   
   chefId              String
-  chef                User     @relation(fields: [chefId], references: [id], onDelete: Cascade)
+  chef                User             @relation(fields: [chefId], references: [id], onDelete: Cascade)
   
+  options             MenuItemOption[]
   orders              Order[]
+}
+
+model MenuItemOption {
+  id         String   @id @default(uuid())
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  label      String
+  orders     Order[]
 }
 
 enum Category {
@@ -67,33 +78,48 @@ enum Category {
   DESSERT
 }
 
-model Order {
-  id         String      @id @default(uuid())
-  menuItemId String
-  menuItem   MenuItem    @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
-  
+model Cart {
+  id         String     @id @default(uuid())
   guestId    String
-  guest      User        @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  guest      User       @relation(fields: [guestId], references: [id], onDelete: Cascade)
   
-  date       DateTime    @default(now())
-  targetDate DateTime    @default(now())
-  status     OrderStatus @default(PENDING)
-  notes      String?
+  targetDate DateTime
+  status     CartStatus @default(PENDING)
   chefNote   String?
+  createdAt  DateTime   @default(now())
+  
+  orders     Order[]
   review     Review?
 }
 
-enum OrderStatus {
+enum CartStatus {
   PENDING
   COOKING
   READY
   COMPLETED
 }
 
+model Order {
+  id               String          @id @default(uuid())
+  cartId           String
+  cart             Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  
+  menuItemId       String
+  menuItem         MenuItem        @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  
+  guestId          String
+  guest            User            @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  
+  selectedOptionId String?
+  selectedOption   MenuItemOption? @relation(fields: [selectedOptionId], references: [id])
+  
+  notes            String?
+}
+
 model Review {
   id       String  @id @default(uuid())
-  orderId  String  @unique
-  order    Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  cartId   String  @unique
+  cart     Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
   rating   Int     // 1 to 5
   feedback String?
 }

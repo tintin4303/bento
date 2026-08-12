@@ -26,33 +26,45 @@ export async function toggleMenuItemAvailability(id: string, isAvailable: boolea
   revalidatePath("/");
 }
 
-export async function createOrder(menuItemId: string, notes?: string, targetDateStr?: string) {
+export async function createCart(
+  items: { menuItemId: string; selectedOptionId?: string; notes?: string }[],
+  targetDateStr: string
+) {
   const session = await getServerSession(authOptions);
   if (!session || (session.user as any).role !== "USER") throw new Error("Unauthorized");
   const guestId = (session.user as any).id;
 
-  await prisma.order.create({
-    data: {
-      menuItemId,
-      guestId,
-      notes,
-      targetDate: targetDateStr ? new Date(targetDateStr) : new Date(),
+  await prisma.$transaction(async (tx) => {
+    const cart = await tx.cart.create({
+      data: {
+        guestId,
+        targetDate: new Date(targetDateStr),
+      }
+    });
+
+    for (const item of items) {
+      await tx.order.create({
+        data: {
+          cartId: cart.id,
+          guestId,
+          menuItemId: item.menuItemId,
+          selectedOptionId: item.selectedOptionId || null,
+          notes: item.notes || null,
+        }
+      });
     }
   });
-  // No revalidatePath — polling on /api/orders and /api/chef/orders picks this up.
 }
 
-export async function cancelOrder(id: string) {
-  await prisma.order.delete({ where: { id } });
-  // No revalidatePath — polling picks this up.
+export async function cancelCart(id: string) {
+  await prisma.cart.delete({ where: { id } });
 }
 
-export async function updateChefNote(id: string, chefNote: string) {
-  await prisma.order.update({
+export async function updateCartChefNote(id: string, chefNote: string) {
+  await prisma.cart.update({
     where: { id },
     data: { chefNote }
   });
-  // No revalidatePath — polling picks this up.
 }
 
 export async function toggleFavorite(id: string, isFavorite: boolean) {
@@ -60,20 +72,17 @@ export async function toggleFavorite(id: string, isFavorite: boolean) {
     where: { id },
     data: { isFavorite }
   });
-  // FavoriteButton already has optimistic state — no revalidatePath needed.
 }
 
-export async function updateOrderStatus(id: string, status: "PENDING" | "COOKING" | "READY" | "COMPLETED") {
-  await prisma.order.update({
+export async function updateCartStatus(id: string, status: "PENDING" | "COOKING" | "READY" | "COMPLETED") {
+  await prisma.cart.update({
     where: { id },
     data: { status }
   });
-  // No revalidatePath — polling on both sides picks this up within 3 s.
 }
 
-export async function submitReview(orderId: string, rating: number, feedback?: string) {
+export async function submitReview(cartId: string, rating: number, feedback?: string) {
   await prisma.review.create({
-    data: { orderId, rating, feedback }
+    data: { cartId, rating, feedback }
   });
-  // No revalidatePath — history page reloads on next navigation.
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { cancelOrder } from "@/app/actions";
+import { cancelCart } from "@/app/actions";
 import { useTransition } from "react";
 
 export function CancelButton({ orderId }: { orderId: string }) {
@@ -9,7 +9,7 @@ export function CancelButton({ orderId }: { orderId: string }) {
   const handleCancel = () => {
     if (!confirm("Are you sure you want to cancel this order?")) return;
     startTransition(async () => {
-      await cancelOrder(orderId);
+      await cancelCart(orderId);
       // Polling will remove the card from the list within 3 s
     });
   };

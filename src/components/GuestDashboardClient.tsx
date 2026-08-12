@@ -9,6 +9,8 @@ import { CancelButton } from "./CancelButton";
 import { MonkeyEmpty } from "./icons/MonkeyEmpty";
 import { ReviewForm } from "./ReviewForm";
 import { Star } from "lucide-react";
+import { CartSheet, CartItem } from "./CartSheet";
+import { ShoppingBag } from "lucide-react";
 import { usePolling } from "@/hooks/usePolling";
 
 type OrderWithMenu = Order & { menuItem: MenuItem; review: any | null };
@@ -16,9 +18,9 @@ type MenuItemType = MenuItem;
 
 interface GuestDashboardClientProps {
   menuItems: MenuItemType[];
-  activeOrders: OrderWithMenu[];
+  activeOrders: any[];
   connectedChef: User | null;
-  unreviewedOrders: OrderWithMenu[];
+  unreviewedOrders: any[];
 }
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string; pill: string }> = {
@@ -26,11 +28,13 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string; pill: string }
   COOKING: { label: "Cooking", dot: "bg-orange-400", pill: "bg-orange-50 text-orange-700 border border-orange-200" },
   READY:   { label: "Ready!",  dot: "bg-blue-400",   pill: "bg-blue-50   text-blue-700   border border-blue-200" },
 };
-
 export function GuestDashboardClient({ menuItems, activeOrders: initialOrders, connectedChef, unreviewedOrders: initialUnreviewed }: GuestDashboardClientProps) {
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [dismissedRatings, setDismissedRatings] = useState<Set<string>>(new Set());
   const calendarRef = useRef<HTMLDivElement>(null);
+
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Live polling — only re-renders these sections when data actually changes
   const { activeOrders, unreviewedOrders } = usePolling(
@@ -41,6 +45,10 @@ export function GuestDashboardClient({ menuItems, activeOrders: initialOrders, c
 
   const scrollToCalendar = () => {
     calendarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handleAddToCart = (item: any) => {
+    setCartItems([...cartItems, item]);
   };
 
   return (
@@ -55,23 +63,21 @@ export function GuestDashboardClient({ menuItems, activeOrders: initialOrders, c
       </div>
 
       {/* ─── Rate your meal prompt ─── */}
-      {unreviewedOrders.filter(o => !dismissedRatings.has(o.id)).map(order => (
-        <div key={order.id} className="bg-white rounded-2xl border border-yellow-200 shadow-sm overflow-hidden">
+      {unreviewedOrders.filter((c: any) => !dismissedRatings.has(c.id)).map((cart: any) => (
+        <div key={cart.id} className="bg-white rounded-2xl border border-yellow-200 shadow-sm overflow-hidden">
           <div className="bg-gradient-to-r from-yellow-50 to-pink-50 px-4 pt-4 pb-3 flex items-center gap-3">
-            {order.menuItem.imageUrl ? (
-              <img src={order.menuItem.imageUrl} alt={order.menuItem.name} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
-            ) : (
-              <div className="w-12 h-12 rounded-xl bg-pink-100 flex items-center justify-center text-xl flex-shrink-0">🍱</div>
-            )}
+            <div className="w-12 h-12 rounded-xl bg-pink-100 flex items-center justify-center text-xl flex-shrink-0">🍱</div>
             <div className="flex-1">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Star size={13} className="fill-yellow-400 text-yellow-400" />
                 <p className="text-xs font-bold text-yellow-700">Rate your meal</p>
               </div>
-              <p className="font-black text-gray-900 text-sm">{order.menuItem.name}</p>
+              <p className="font-black text-gray-900 text-sm leading-tight">
+                {cart.orders.map((o: any) => o.menuItem.name).join(' + ')}
+              </p>
             </div>
             <button
-              onClick={() => setDismissedRatings(prev => new Set(prev).add(order.id))}
+              onClick={() => setDismissedRatings(prev => new Set(prev).add(cart.id))}
               className="text-gray-300 hover:text-gray-500 text-lg leading-none flex-shrink-0"
               aria-label="Dismiss"
             >
@@ -79,40 +85,63 @@ export function GuestDashboardClient({ menuItems, activeOrders: initialOrders, c
             </button>
           </div>
           <div className="p-4 pt-3">
-            <ReviewForm orderId={order.id} />
+            <ReviewForm orderId={cart.id} />
           </div>
         </div>
       ))}
 
-      {/* ─── Active Orders ─── */}
+      {/* ─── Active Orders (Carts) ─── */}
       {activeOrders.length > 0 && (
         <section>
           <h2 className="text-xl font-black text-gray-900 mb-4">Your Orders</h2>
           <div className="space-y-3">
-            {activeOrders.map(order => {
-              const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.PENDING;
+            {activeOrders.map((cart: any) => {
+              const cfg = STATUS_CONFIG[cart.status] ?? STATUS_CONFIG.PENDING;
               return (
-                <div key={order.id} className="bg-white rounded-2xl border border-pink-50 shadow-sm p-4 flex items-center gap-4">
-                  {order.menuItem.imageUrl ? (
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-pink-50">
-                      <img src={order.menuItem.imageUrl} alt={order.menuItem.name} className="w-full h-full object-cover" />
+                <div key={cart.id} className="bg-white rounded-2xl border border-pink-50 shadow-sm p-4 flex flex-col gap-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-xs text-gray-400 font-semibold mb-1">
+                        {new Date(cart.targetDate).toLocaleDateString("en-US", { timeZone: "Asia/Bangkok", weekday: "short", month: "short", day: "numeric" })}
+                      </p>
+                      <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${cfg.pill}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+                        {cfg.label}
+                      </span>
                     </div>
-                  ) : (
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl bg-pink-50 flex items-center justify-center text-3xl">
-                      🍱
+                    {cart.status === "PENDING" && <CancelButton orderId={cart.id} />}
+                  </div>
+
+                  <div className="bg-gray-50 rounded-xl p-3 border border-gray-100 space-y-1.5">
+                    {cart.orders.map((o: any) => (
+                      <div key={o.id} className="flex gap-3 items-start">
+                        {o.menuItem.imageUrl ? (
+                          <img src={o.menuItem.imageUrl} alt={o.menuItem.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0 bg-pink-50" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-pink-50 flex items-center justify-center text-lg flex-shrink-0">🍱</div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-gray-900 text-sm leading-tight">{o.menuItem.name}</p>
+                          {o.selectedOption && (
+                            <span className="text-[9px] bg-pink-100 text-secondary px-1.5 rounded uppercase font-bold mt-0.5 inline-block">
+                              {o.selectedOption.label}
+                            </span>
+                          )}
+                          {o.notes && <p className="text-[10px] text-gray-500 italic mt-0.5">"{o.notes}"</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {cart.chefNote && (
+                    <div className="mt-1 p-2.5 bg-pink-50/50 rounded-xl border border-pink-100 flex gap-2 items-start">
+                      <span className="text-lg leading-none">👨‍🍳</span>
+                      <div>
+                        <p className="text-[10px] font-bold text-secondary">Chef's Note</p>
+                        <p className="text-xs text-gray-600 italic">"{cart.chefNote}"</p>
+                      </div>
                     </div>
                   )}
-                  <div className="flex-1 min-w-0 py-3">
-                    <p className="font-black text-gray-900 text-sm">{order.menuItem.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {new Date(order.targetDate).toLocaleDateString("en-US", { timeZone: "Asia/Bangkok", weekday: "short", month: "short", day: "numeric" })}
-                    </p>
-                    <span className={`mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${cfg.pill}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                      {cfg.label}
-                    </span>
-                  </div>
-                  {order.status === "PENDING" && <CancelButton orderId={order.id} />}
                 </div>
               );
             })}
@@ -141,7 +170,7 @@ export function GuestDashboardClient({ menuItems, activeOrders: initialOrders, c
           </div>
         ) : (
           <div className="space-y-4">
-            {menuItems.map(item => (
+            {menuItems.map((item: any) => (
               <div
                 key={item.id}
                 className="bg-white rounded-2xl border border-pink-50 shadow-sm p-4 flex gap-4 hover:border-secondary/40 hover:shadow-md transition-all duration-200"
@@ -173,9 +202,10 @@ export function GuestDashboardClient({ menuItems, activeOrders: initialOrders, c
 
                   <div className="mt-3 pt-3 border-t border-pink-50">
                     <OrderForm
-                      menuItemId={item.id}
+                      menuItem={item}
                       selectedDate={selectedDate || null}
                       onScrollToCalendar={scrollToCalendar}
+                      onAddToCart={handleAddToCart}
                     />
                   </div>
                 </div>
@@ -184,6 +214,30 @@ export function GuestDashboardClient({ menuItems, activeOrders: initialOrders, c
           </div>
         )}
       </section>
+
+      {/* ─── Cart FAB ─── */}
+      {cartItems.length > 0 && (
+        <button
+          onClick={() => setIsCartOpen(true)}
+          className="fixed bottom-6 right-6 z-40 bg-secondary text-white p-4 rounded-full shadow-lg shadow-pink-200 hover:bg-pink-600 hover:scale-105 active:scale-95 transition-all animate-in zoom-in"
+        >
+          <div className="relative">
+            <ShoppingBag size={24} />
+            <span className="absolute -top-2 -right-2 bg-white text-secondary text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-secondary">
+              {cartItems.length}
+            </span>
+          </div>
+        </button>
+      )}
+
+      {/* ─── Cart Sheet ─── */}
+      <CartSheet 
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cartItems={cartItems}
+        setCartItems={setCartItems}
+        selectedDate={selectedDate || null}
+      />
     </div>
   );
 }

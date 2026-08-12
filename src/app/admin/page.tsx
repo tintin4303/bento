@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { Button } from "@/components/ui/Button";
-import { toggleMenuItemAvailability, updateOrderStatus, updateChefNote } from "@/app/actions";
+import { toggleMenuItemAvailability } from "@/app/actions";
 import { MenuItemForm } from "@/components/MenuItemForm";
 import { deleteMenuItem } from "@/app/actions/menu";
 import { ChefMenu } from "@/components/ChefMenu";
@@ -39,19 +39,27 @@ export default async function AdminDashboard() {
 
   const menuItems = await prisma.menuItem.findMany({
     where: { chefId },
+    include: { options: true },
     orderBy: { category: "asc" }
   });
 
-  const activeOrders = await prisma.order.findMany({
-    where: { status: { not: "COMPLETED" }, menuItem: { chefId } },
-    include: { menuItem: true, guest: true },
+  const activeOrders = await prisma.cart.findMany({
+    where: { status: { not: "COMPLETED" }, orders: { some: { menuItem: { chefId } } } },
+    include: {
+      guest: true,
+      orders: { include: { menuItem: true, selectedOption: true } }
+    },
     orderBy: { targetDate: "asc" }
   });
 
   const recentReviews = await prisma.review.findMany({
-    where: { order: { menuItem: { chefId } } },
-    include: { order: { include: { menuItem: true, guest: true } } },
-    orderBy: { order: { date: "desc" } },
+    where: { cart: { orders: { some: { menuItem: { chefId } } } } },
+    include: {
+      cart: {
+        include: { guest: true, orders: { include: { menuItem: true } } }
+      }
+    },
+    orderBy: { cart: { targetDate: "desc" } },
     take: 10
   });
 

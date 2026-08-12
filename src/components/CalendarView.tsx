@@ -1,13 +1,10 @@
 "use client";
 
-import { Order, MenuItem } from "@/generated/prisma/client";
 import { useEffect, useRef, useState } from "react";
 import { CalendarX } from "lucide-react";
 
-type OrderWithMenu = Order & { menuItem: MenuItem };
-
 interface CalendarViewProps {
-  orders: OrderWithMenu[];
+  orders: any[]; // These are actually Carts now
   selectedDate: string | null;       // "YYYY-MM-DD"
   onSelectDate: (date: string) => void;
 }
@@ -97,9 +94,9 @@ export function CalendarView({ orders, selectedDate, onSelectDate }: CalendarVie
               {/* Order indicator dots */}
               {hasOrder && (
                 <div className="flex flex-col gap-1 w-full mt-1">
-                  {dayOrders.map(o => (
+                  {dayOrders.flatMap(cart => cart.orders || []).map((o: any) => (
                     <div key={o.id} className="relative mx-auto">
-                      {o.menuItem.imageUrl ? (
+                      {o.menuItem?.imageUrl ? (
                         <img
                           src={o.menuItem.imageUrl}
                           alt={o.menuItem.name}

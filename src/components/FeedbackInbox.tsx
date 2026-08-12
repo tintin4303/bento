@@ -17,7 +17,9 @@ export function FeedbackInbox({ recentReviews }: FeedbackInboxProps) {
           {recentReviews.map(review => (
             <Card key={review.id} className="border border-pink-100 flex flex-col gap-3">
               <div className="flex justify-between items-center">
-                <h3 className="font-bold text-gray-900">{review.order.menuItem.name}</h3>
+                <h3 className="font-bold text-gray-900 leading-tight">
+                  {review.cart.orders.map((o: any) => o.menuItem.name).join(' + ')}
+                </h3>
                 <div className="flex flex-col items-center">
                   <MonkeySlider rating={review.rating} className="w-10 h-10" />
                   <span className="text-xs font-bold text-secondary mt-1">{review.rating}/5</span>
@@ -28,7 +30,7 @@ export function FeedbackInbox({ recentReviews }: FeedbackInboxProps) {
                   "{review.feedback}"
                 </p>
               )}
-              <p className="text-xs text-gray-400 mt-2">{review.order.date.toLocaleDateString('en-US', { timeZone: 'Asia/Bangkok' })}</p>
+              <p className="text-xs text-gray-400 mt-2">{new Date(review.cart.targetDate).toLocaleDateString('en-US', { timeZone: 'Asia/Bangkok' })}</p>
             </Card>
           ))}
         </div>
