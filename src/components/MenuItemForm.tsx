@@ -7,14 +7,26 @@ import { Card } from "./ui/Card";
 import { createMenuItem } from "@/app/actions/menu";
 import { Category } from "@/generated/prisma/client";
 
-export function MenuItemForm() {
+export function MenuItemForm({ onOptimisticAdd }: { onOptimisticAdd?: (item: any) => void }) {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
     const formData = new FormData(e.currentTarget);
+    
+    if (onOptimisticAdd) {
+      onOptimisticAdd({
+        id: Math.random().toString(),
+        name: formData.get("name"),
+        description: formData.get("description"),
+        category: formData.get("category"),
+        imageUrl: null, // Optimistic UI won't have the uploaded image URL yet
+        isAvailableThisWeek: true,
+      });
+    }
+
+    setLoading(true);
     await createMenuItem(formData);
     setLoading(false);
     setIsOpen(false);

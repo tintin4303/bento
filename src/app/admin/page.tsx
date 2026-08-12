@@ -12,6 +12,7 @@ import { DishRequestInbox } from "@/components/DishRequestInbox";
 import { ProfileForm } from "@/components/ProfileForm";
 import { ConnectedGuestsList } from "@/components/ConnectedGuestsList";
 import { ChefActiveOrders } from "@/components/ChefActiveOrders";
+import { ChefMenuClient } from "@/components/ChefMenuClient";
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string; badge: string }> = {
   PENDING:  { label: "Pending",  dot: "bg-yellow-400", badge: "bg-yellow-50  text-yellow-700 border border-yellow-200" },
@@ -117,76 +118,7 @@ export default async function AdminDashboard() {
         <div className="grid lg:grid-cols-5 gap-6">
 
           {/* ─── LEFT: Menu Panel ─── */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-baseline justify-between">
-              <h2 className="text-xl font-black text-gray-900">Your Menu</h2>
-              <span className="text-xs text-gray-400 font-semibold">{menuItems.length} dish{menuItems.length !== 1 ? "es" : ""}</span>
-            </div>
-
-            <MenuItemForm />
-
-            {menuItems.length === 0 && (
-              <div className="bg-white rounded-2xl border border-dashed border-pink-200 p-8 text-center">
-                <p className="text-gray-400 text-sm">No dishes yet. Add your first one above!</p>
-              </div>
-            )}
-
-            {/* Available Dishes */}
-            {visibleItems.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest px-1">Available this week</p>
-                {visibleItems.map(item => (
-                  <div key={item.id} className="bg-white rounded-2xl border border-pink-50 shadow-sm p-4 flex gap-3 items-center">
-                    {item.imageUrl ? (
-                      <img src={item.imageUrl} alt={item.name} className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
-                    ) : (
-                      <div className="w-14 h-14 rounded-xl bg-pink-50 flex-shrink-0 flex items-center justify-center text-2xl">🍱</div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900 text-sm truncate">{item.name}</p>
-                      <span className="text-[10px] font-bold text-gray-400 uppercase">{item.category}</span>
-                    </div>
-                    <div className="flex flex-col gap-1.5 flex-shrink-0">
-                      <form action={async () => { "use server"; await toggleMenuItemAvailability(item.id, false); }}>
-                        <button className="text-[10px] font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-lg transition-colors w-full">Hide</button>
-                      </form>
-                      <form action={async () => { "use server"; await deleteMenuItem(item.id, item.imageUrl); }}>
-                        <button className="text-[10px] font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg transition-colors w-full">Delete</button>
-                      </form>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Hidden Dishes */}
-            {hiddenItems.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest px-1">Hidden</p>
-                {hiddenItems.map(item => (
-                  <div key={item.id} className="bg-white/60 rounded-2xl border border-pink-50 p-4 flex gap-3 items-center opacity-60">
-                    {item.imageUrl ? (
-                      <img src={item.imageUrl} alt={item.name} className="w-14 h-14 rounded-xl object-cover flex-shrink-0 grayscale" />
-                    ) : (
-                      <div className="w-14 h-14 rounded-xl bg-gray-100 flex-shrink-0 flex items-center justify-center text-2xl grayscale">🍱</div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-500 text-sm truncate">{item.name}</p>
-                      <span className="text-[10px] font-bold text-gray-400 uppercase">{item.category}</span>
-                    </div>
-                    <div className="flex flex-col gap-1.5 flex-shrink-0">
-                      <form action={async () => { "use server"; await toggleMenuItemAvailability(item.id, true); }}>
-                        <button className="text-[10px] font-bold text-secondary bg-pink-50 hover:bg-pink-100 px-2 py-1 rounded-lg transition-colors w-full">Show</button>
-                      </form>
-                      <form action={async () => { "use server"; await deleteMenuItem(item.id, item.imageUrl); }}>
-                        <button className="text-[10px] font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg transition-colors w-full">Delete</button>
-                      </form>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+            <ChefMenuClient initialItems={menuItems as any} />
 
           {/* ─── RIGHT: Active Orders ─── */}
           <div className="lg:col-span-3 space-y-4">
