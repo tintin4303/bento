@@ -25,6 +25,7 @@ export function EditMenuItemForm({ item, onCancel, onOptimisticUpdate }: EditMen
         name: formData.get("name"),
         description: formData.get("description"),
         category: formData.get("category"),
+        optionsRequired: formData.get("optionsRequired") === "true",
       });
     }
 
@@ -64,6 +65,17 @@ export function EditMenuItemForm({ item, onCancel, onOptimisticUpdate }: EditMen
             <Input type="file" name="image" accept="image/*" className="py-2" />
             <p className="text-[10px] text-gray-500 mt-1">Leave empty to keep current picture.</p>
           </div>
+        </div>
+        
+        <div className="border-t border-pink-50 pt-4 mt-2">
+          <label className="text-xs font-bold text-gray-600 flex justify-between items-center mb-2">
+            <span>Dish Options Settings</span>
+            <label className="flex items-center gap-1 cursor-pointer">
+              <input type="checkbox" name="optionsRequired" value="true" defaultChecked={item.optionsRequired} className="rounded text-secondary" />
+              <span className="text-[10px] uppercase">Required</span>
+            </label>
+          </label>
+          <p className="text-[10px] text-gray-500">Note: You can add/remove options from the main menu view.</p>
         </div>
         
         <div className="flex gap-2 pt-2">

@@ -62,10 +62,12 @@ export async function updateMenuItem(id: string, formData: FormData, existingIma
     const blob = await put(`menu_${chefId}_${image.name}`, image, { access: "public" });
     imageUrl = blob.url;
   }
+  
+  const optionsRequired = formData.get("optionsRequired") === "true";
 
   await prisma.menuItem.update({
     where: { id },
-    data: { name, description, category, imageUrl },
+    data: { name, description, category, imageUrl, optionsRequired },
   });
 
   revalidatePath("/admin");

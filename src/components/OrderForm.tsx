@@ -17,7 +17,7 @@ export function OrderForm({ menuItem, selectedDate, onScrollToCalendar, onAddToC
 
   const handleAddToCart = () => {
     if (!selectedDate) return;
-    if (menuItem.optionsRequired && !selectedOptionId) {
+    if (menuItem.optionsRequired && menuItem.options?.length > 0 && !selectedOptionId) {
       alert("Please select an option.");
       return;
     }
