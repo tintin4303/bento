@@ -38,7 +38,7 @@ export function CartSheet({ isOpen, onClose, cartItems, setCartItems, selectedDa
     // Map items for the server action
     const items = cartItems.map(item => ({
       menuItemId: item.menuItemId,
-      optionId: item.optionId,
+      selectedOptionId: item.optionId || undefined,
       notes: item.notes
     }));
 
