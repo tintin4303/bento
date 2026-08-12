@@ -116,7 +116,7 @@ export function ChefMenuClient({ initialItems }: ChefMenuClientProps) {
         </div>
         <div className="flex flex-col gap-1.5 flex-shrink-0 ml-auto">
         <button 
-          onClick={() => handleToggle(item.id, isHidden)}
+          onClick={() => handleToggle(item.id, item.isAvailableThisWeek)}
           className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors w-full ${isHidden ? 'text-secondary bg-pink-50 hover:bg-pink-100' : 'text-gray-500 bg-gray-100 hover:bg-gray-200'}`}
         >
           {isHidden ? 'Show' : 'Hide'}
