@@ -52,12 +52,12 @@ export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
             <div className="p-4 flex flex-col gap-3 flex-1">
               {/* Header */}
               <div className="flex justify-between items-start gap-2">
-                <div className="flex gap-3 items-center">
+                <div className="flex gap-3 items-center min-w-0">
                   <div className="w-12 h-12 rounded-xl bg-pink-50 flex-shrink-0 flex items-center justify-center text-xl border border-pink-100">
                     <span className="font-black text-secondary">{cart.orders.length}</span>
                   </div>
-                  <div>
-                    <p className="font-black text-gray-900 text-sm leading-tight">{cart.guest?.displayName || cart.guest?.username}</p>
+                  <div className="min-w-0">
+                    <p className="font-black text-gray-900 text-sm leading-tight truncate">{cart.guest?.displayName || cart.guest?.username}</p>
                     <p className="text-[10px] text-gray-400 font-semibold mt-0.5">
                       📅 {new Date(cart.targetDate).toLocaleDateString("en-US", { timeZone: "Asia/Bangkok", weekday: "short", month: "short", day: "numeric" })}
                     </p>

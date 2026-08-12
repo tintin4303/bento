@@ -79,7 +79,7 @@ export default async function AdminDashboard() {
   const hiddenItems   = menuItems.filter(i => !i.isAvailableThisWeek);
 
   return (
-    <div className="min-h-screen bg-[#FDF2F8]">
+    <div className="min-h-screen bg-[#FDF2F8] overflow-x-hidden">
       {/* ─── Top Nav Bar ─── */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-pink-100">
         <div className="max-w-6xl mx-auto px-5 py-3 flex justify-between items-center">
@@ -118,7 +118,7 @@ export default async function AdminDashboard() {
         <div className="grid lg:grid-cols-5 gap-6">
 
           {/* ─── LEFT: Menu Panel ─── */}
-          <div id="menu-panel">
+          <div id="menu-panel" className="lg:col-span-2">
             <ChefMenuClient initialItems={menuItems as any} />
           </div>
 

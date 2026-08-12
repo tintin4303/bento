@@ -87,7 +87,7 @@ export function ChefMenuClient({ initialItems }: ChefMenuClientProps) {
         }}
       />
     ) : (
-      <div key={item.id} className={`bg-white rounded-2xl border border-pink-50 p-4 flex gap-3 items-start relative group ${isHidden ? 'opacity-60 grayscale' : 'shadow-sm'}`}>
+      <div key={item.id} className={`bg-white rounded-2xl border border-pink-50 p-4 flex gap-3 items-start relative group overflow-hidden ${isHidden ? 'opacity-60 grayscale' : 'shadow-sm'}`}>
 
         {item.imageUrl ? (
           <img src={item.imageUrl} alt={item.name} className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
