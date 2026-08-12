@@ -3,7 +3,6 @@
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
 
 export async function createDishRequest(formData: FormData) {
   const session = await getServerSession(authOptions);
@@ -19,16 +18,9 @@ export async function createDishRequest(formData: FormData) {
   if (!dishName) throw new Error("Dish name is required");
 
   await prisma.dishRequest.create({
-    data: {
-      guestId,
-      chefId: connectedChefId,
-      dishName,
-      notes,
-    }
+    data: { guestId, chefId: connectedChefId, dishName, notes },
   });
-
-  revalidatePath("/");
-  revalidatePath("/admin");
+  // No revalidatePath — DishRequestInbox polls /api/chef/requests every 3 s.
 }
 
 export async function updateDishRequestStatus(id: string, status: "PENDING" | "ACCEPTED" | "REJECTED", replyNote?: string) {
@@ -41,9 +33,7 @@ export async function updateDishRequestStatus(id: string, status: "PENDING" | "A
 
   await prisma.dishRequest.update({
     where: { id },
-    data: { status, replyNote: replyNote ?? null }
+    data: { status, replyNote: replyNote ?? null },
   });
-
-  revalidatePath("/");
-  revalidatePath("/admin");
+  // No revalidatePath — polling on both sides picks this up.
 }

@@ -12,11 +12,6 @@ async function getAuthenticatedUserId() {
   return (session.user as any).id as string;
 }
 
-function revalidateAll() {
-  revalidatePath("/");
-  revalidatePath("/admin");
-}
-
 export async function updateDisplayName(formData: FormData) {
   const userId = await getAuthenticatedUserId();
   const displayName = formData.get("displayName") as string;
@@ -24,7 +19,9 @@ export async function updateDisplayName(formData: FormData) {
     where: { id: userId },
     data: { displayName: displayName?.trim() || undefined },
   });
-  revalidateAll();
+  // Display name is shown in the nav bar which is server-rendered — keep one revalidation.
+  revalidatePath("/");
+  revalidatePath("/admin");
 }
 
 export async function updateAvatar(formData: FormData) {
@@ -36,7 +33,8 @@ export async function updateAvatar(formData: FormData) {
     where: { id: userId },
     data: { avatarUrl: blob.url },
   });
-  revalidateAll();
+  revalidatePath("/");
+  revalidatePath("/admin");
 }
 
 export async function updatePreferences(formData: FormData) {
@@ -53,7 +51,8 @@ export async function updatePreferences(formData: FormData) {
       allergies: parse("allergies"),
     },
   });
-  revalidateAll();
+  // Preferences are shown in ConnectedGuestsList on chef side — revalidate admin only.
+  revalidatePath("/admin");
 }
 
 // Keep old function for any remaining callers

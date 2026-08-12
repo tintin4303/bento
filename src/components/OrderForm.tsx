@@ -1,27 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useTransition } from "react";
 import { createOrder } from "@/app/actions";
+import { useState } from "react";
 import { CalendarDays, CheckCircle2 } from "lucide-react";
 
 interface OrderFormProps {
   menuItemId: string;
-  selectedDate: string | null;   // "YYYY-MM-DD" from calendar
+  selectedDate: string | null;
   onScrollToCalendar: () => void;
 }
 
 export function OrderForm({ menuItemId, selectedDate, onScrollToCalendar }: OrderFormProps) {
   const [notes, setNotes] = useState("");
-  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-  const handleOrder = async () => {
+  const handleOrder = () => {
     if (!selectedDate) return;
-    setLoading(true);
-    await createOrder(menuItemId, notes, selectedDate);
+    // Show success state immediately — don't await the server round-trip
     setSuccess(true);
-    setLoading(false);
+    startTransition(async () => {
+      await createOrder(menuItemId, notes, selectedDate);
+      // Polling will pick up the new order within 3 s
+    });
   };
 
   if (success) {
@@ -51,15 +54,12 @@ export function OrderForm({ menuItemId, selectedDate, onScrollToCalendar }: Orde
 
   return (
     <div className="space-y-2">
-      {/* Confirm row */}
       <div className="flex items-center gap-2">
-        {/* Date chip */}
         <div className="flex items-center gap-1.5 text-xs font-bold text-secondary bg-pink-50 border border-pink-200 rounded-lg px-2.5 py-1.5 flex-shrink-0">
           <CalendarDays size={13} />
           {formattedDate}
         </div>
 
-        {/* Notes toggle */}
         <button
           type="button"
           onClick={() => setShowNotes(v => !v)}
@@ -68,17 +68,15 @@ export function OrderForm({ menuItemId, selectedDate, onScrollToCalendar }: Orde
           {showNotes ? "hide note" : "+ note"}
         </button>
 
-        {/* Order button */}
         <button
           onClick={handleOrder}
-          disabled={loading}
+          disabled={isPending}
           className="ml-auto flex-shrink-0 text-sm font-black bg-secondary text-white px-4 py-1.5 rounded-xl hover:bg-pink-600 active:scale-95 transition-all disabled:opacity-60"
         >
-          {loading ? "..." : "Order"}
+          Order
         </button>
       </div>
 
-      {/* Collapsible notes */}
       {showNotes && (
         <input
           type="text"
