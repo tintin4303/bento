@@ -166,12 +166,11 @@ export default function RegisterPage() {
                   <input
                     name="chefCode"
                     type="text"
-                    required
                     className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-gray-200 bg-white focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all font-bold text-gray-900 uppercase tracking-widest placeholder:text-gray-300 placeholder:font-normal placeholder:normal-case placeholder:tracking-normal"
-                    placeholder="6-digit code from your chef"
+                    placeholder="Optional: 6-digit code"
                   />
                 </div>
-                <p className="text-xs text-gray-400 mt-1.5 font-medium">Ask your chef for their secret invite code.</p>
+                <p className="text-xs text-gray-400 mt-1.5 font-medium">Ask your chef for their secret invite code, or add it later.</p>
               </div>
             )}
 

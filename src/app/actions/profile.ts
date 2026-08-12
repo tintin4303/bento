@@ -60,3 +60,22 @@ export async function updateProfile(formData: FormData) {
   await updateDisplayName(formData);
   await updatePreferences(formData);
 }
+
+export async function connectChef(formData: FormData) {
+  const userId = await getAuthenticatedUserId();
+  const chefCode = formData.get("chefCode") as string;
+  
+  if (!chefCode) throw new Error("Chef Code is required.");
+  
+  const chef = await prisma.user.findUnique({ where: { chefCode } });
+  if (!chef || chef.role !== "ADMIN") {
+    throw new Error("Invalid Chef Code.");
+  }
+  
+  await prisma.user.update({
+    where: { id: userId },
+    data: { connectedChefId: chef.id }
+  });
+  
+  revalidatePath("/");
+}

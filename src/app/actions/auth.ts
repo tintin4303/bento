@@ -47,13 +47,13 @@ export async function registerUser(formData: FormData) {
 
   } else {
     // Registering as a Guest
-    if (!chefCode) {
-      throw new Error("You must enter a Chef Code to connect to your Chef!");
-    }
-
-    const chef = await prisma.user.findUnique({ where: { chefCode } });
-    if (!chef || chef.role !== "ADMIN") {
-      throw new Error("Invalid Chef Code");
+    let chefId = null;
+    if (chefCode) {
+      const chef = await prisma.user.findUnique({ where: { chefCode } });
+      if (!chef || chef.role !== "ADMIN") {
+        throw new Error("Invalid Chef Code");
+      }
+      chefId = chef.id;
     }
 
     await prisma.user.create({
@@ -61,7 +61,7 @@ export async function registerUser(formData: FormData) {
         username,
         password: hashedPassword,
         role: "USER",
-        connectedChefId: chef.id,
+        connectedChefId: chefId,
         displayName: username,
       }
     });
