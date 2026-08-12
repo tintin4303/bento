@@ -18,6 +18,8 @@ interface ChefActiveOrdersProps {
 export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
   // Chef notes local state (ephemeral)
   const [chefNotes, setChefNotes] = useState<Record<string, string>>({});
+  // Optimistic status local state (instant UI feedback)
+  const [optimisticStatuses, setOptimisticStatuses] = useState<Record<string, string>>({});
 
   // Live polling — new guest orders pop up immediately
   const { activeOrders } = usePolling(
@@ -26,7 +28,9 @@ export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
     3000
   );
 
-  if (activeOrders.length === 0) {
+  const visibleOrders = activeOrders.filter((o: any) => (optimisticStatuses[o.id] || o.status) !== "COMPLETED");
+
+  if (visibleOrders.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-dashed border-pink-200 p-12 text-center">
         <p className="font-bold text-gray-700">All clear!</p>
@@ -37,8 +41,9 @@ export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
 
   return (
     <div className="grid sm:grid-cols-2 gap-4">
-      {activeOrders.map((order: any) => {
-        const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.PENDING;
+      {visibleOrders.map((order: any) => {
+        const currentStatus = optimisticStatuses[order.id] || order.status;
+        const cfg = STATUS_CONFIG[currentStatus] ?? STATUS_CONFIG.PENDING;
         const noteValue = chefNotes[order.id] ?? order.chefNote ?? "";
         return (
           <div key={order.id} className="bg-white rounded-2xl border border-pink-50 shadow-sm overflow-hidden flex flex-col">
@@ -99,19 +104,28 @@ export function ChefActiveOrders({ initialOrders }: ChefActiveOrdersProps) {
               {/* Status Buttons */}
               <div className="flex gap-2 mt-auto">
                 <button
-                  onClick={() => updateOrderStatus(order.id, "COOKING")}
+                  onClick={() => {
+                    setOptimisticStatuses(prev => ({ ...prev, [order.id]: "COOKING" }));
+                    updateOrderStatus(order.id, "COOKING");
+                  }}
                   className="flex-1 text-[11px] font-bold py-2 rounded-xl bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-100 transition-colors"
                 >
                   Cooking
                 </button>
                 <button
-                  onClick={() => updateOrderStatus(order.id, "READY")}
+                  onClick={() => {
+                    setOptimisticStatuses(prev => ({ ...prev, [order.id]: "READY" }));
+                    updateOrderStatus(order.id, "READY");
+                  }}
                   className="flex-1 text-[11px] font-bold py-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-100 transition-colors"
                 >
                   Ready
                 </button>
                 <button
-                  onClick={() => updateOrderStatus(order.id, "COMPLETED")}
+                  onClick={() => {
+                    setOptimisticStatuses(prev => ({ ...prev, [order.id]: "COMPLETED" }));
+                    updateOrderStatus(order.id, "COMPLETED");
+                  }}
                   className="flex-1 text-[11px] font-bold py-2 rounded-xl bg-secondary text-white hover:bg-pink-600 transition-colors"
                 >
                   Done ✓

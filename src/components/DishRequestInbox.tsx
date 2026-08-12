@@ -22,9 +22,12 @@ export function DishRequestInbox({ pendingRequests: initialRequests }: DishReque
   const visible = pendingRequests.filter((r: any) => !responded[r.id]);
 
   const handleRespond = async (id: string, status: "ACCEPTED" | "REJECTED") => {
+    // Optimistic UI: hide it instantly
+    setResponded(prev => ({ ...prev, [id]: true }));
+    
+    // Background server call
     const { updateDishRequestStatus } = await import("@/app/actions/requests");
     await updateDishRequestStatus(id, status, replyNotes[id] ?? "");
-    setResponded(prev => ({ ...prev, [id]: true }));
   };
 
   return (

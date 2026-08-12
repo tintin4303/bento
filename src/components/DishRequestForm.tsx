@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { createDishRequest } from "@/app/actions/requests";
 import { Send } from "lucide-react";
 
@@ -17,18 +17,23 @@ export function DishRequestForm() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const [isPending, startTransition] = useTransition();
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
     const formData = new FormData(e.currentTarget);
-    // Append selected category as part of the notes if no dishName explicitly typed
+    
     if (selectedCategory) {
       const existing = formData.get("notes") as string;
       formData.set("notes", [selectedCategory, existing].filter(Boolean).join(" · "));
     }
-    await createDishRequest(formData);
+    
+    // Instant UI feedback
     setSent(true);
-    setLoading(false);
+    
+    startTransition(async () => {
+      await createDishRequest(formData);
+    });
   };
 
   if (sent) {
