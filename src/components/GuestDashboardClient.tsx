@@ -9,6 +9,7 @@ import { CancelButton } from "./CancelButton";
 import { MonkeyEmpty } from "./icons/MonkeyEmpty";
 import { ReviewForm } from "./ReviewForm";
 import { Star } from "lucide-react";
+import { usePolling } from "@/hooks/usePolling";
 
 type OrderWithMenu = Order & { menuItem: MenuItem; review: any | null };
 type MenuItemType = MenuItem;
@@ -26,10 +27,17 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string; pill: string }
   READY:   { label: "Ready!",  dot: "bg-blue-400",   pill: "bg-blue-50   text-blue-700   border border-blue-200" },
 };
 
-export function GuestDashboardClient({ menuItems, activeOrders, connectedChef, unreviewedOrders }: GuestDashboardClientProps) {
+export function GuestDashboardClient({ menuItems, activeOrders: initialOrders, connectedChef, unreviewedOrders: initialUnreviewed }: GuestDashboardClientProps) {
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [dismissedRatings, setDismissedRatings] = useState<Set<string>>(new Set());
   const calendarRef = useRef<HTMLDivElement>(null);
+
+  // Live polling — only re-renders these sections when data actually changes
+  const { activeOrders, unreviewedOrders } = usePolling(
+    "/api/orders",
+    { activeOrders: initialOrders, unreviewedOrders: initialUnreviewed },
+    3000
+  );
 
   const scrollToCalendar = () => {
     calendarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });

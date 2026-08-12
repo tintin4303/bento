@@ -11,7 +11,7 @@ import { FeedbackInbox } from "@/components/FeedbackInbox";
 import { DishRequestInbox } from "@/components/DishRequestInbox";
 import { ProfileForm } from "@/components/ProfileForm";
 import { ConnectedGuestsList } from "@/components/ConnectedGuestsList";
-import { AutoRefresh } from "@/components/AutoRefresh";
+import { ChefActiveOrders } from "@/components/ChefActiveOrders";
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string; badge: string }> = {
   PENDING:  { label: "Pending",  dot: "bg-yellow-400", badge: "bg-yellow-50  text-yellow-700 border border-yellow-200" },
@@ -70,7 +70,6 @@ export default async function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-[#FDF2F8]">
-      <AutoRefresh intervalMs={5000} />
       {/* ─── Top Nav Bar ─── */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-pink-100">
         <div className="max-w-6xl mx-auto px-5 py-3 flex justify-between items-center">
@@ -195,97 +194,7 @@ export default async function AdminDashboard() {
               <h2 className="text-xl font-black text-gray-900">Active Orders</h2>
               <span className="text-xs text-gray-400 font-semibold">{activeOrders.length} order{activeOrders.length !== 1 ? "s" : ""}</span>
             </div>
-
-            {activeOrders.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-dashed border-pink-200 p-12 text-center">
-                <p className="text-4xl mb-3">🧘</p>
-                <p className="font-bold text-gray-700">All clear!</p>
-                <p className="text-sm text-gray-400 mt-1">No active orders right now.</p>
-              </div>
-            ) : (
-              <div className="grid sm:grid-cols-2 gap-4">
-                {activeOrders.map(order => {
-                  const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.PENDING;
-                  return (
-                    <div key={order.id} className="bg-white rounded-2xl border border-pink-50 shadow-sm overflow-hidden flex flex-col">
-                      {/* Card top accent */}
-                      <div className="h-1 bg-gradient-to-r from-secondary to-pink-300" />
-                      
-                      <div className="p-4 flex flex-col gap-3 flex-1">
-                        {/* Header */}
-                        <div className="flex justify-between items-start gap-2">
-                          <div className="flex gap-3 items-center">
-                            {order.menuItem.imageUrl ? (
-                              <img src={order.menuItem.imageUrl} alt={order.menuItem.name} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
-                            ) : (
-                              <div className="w-12 h-12 rounded-xl bg-pink-50 flex-shrink-0 flex items-center justify-center text-xl">🍱</div>
-                            )}
-                            <div>
-                              <p className="font-black text-gray-900 text-sm leading-tight">{order.menuItem.name}</p>
-                              <p className="text-xs text-gray-500 font-semibold mt-0.5">
-                                {order.guest.displayName || order.guest.username}
-                              </p>
-                            </div>
-                          </div>
-                          <span className={`text-[10px] font-bold px-2 py-1 rounded-full flex-shrink-0 flex items-center gap-1 ${cfg.badge}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot} inline-block`} />
-                            {cfg.label}
-                          </span>
-                        </div>
-
-                        {/* Date */}
-                        <p className="text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-1.5 font-medium">
-                          📅 {order.targetDate.toLocaleDateString('en-US', { timeZone: 'Asia/Bangkok', weekday: 'long', month: 'short', day: 'numeric' })}
-                        </p>
-
-                        {/* Guest Note */}
-                        {order.notes && (
-                          <p className="text-xs text-gray-600 bg-pink-50 border border-pink-100 rounded-lg px-3 py-2 italic">
-                            "{order.notes}"
-                          </p>
-                        )}
-
-                        {/* Chef Note */}
-                        <form action={async (formData) => {
-                          "use server";
-                          const note = formData.get("chefNote") as string;
-                          if (note) await updateChefNote(order.id, note);
-                        }} className="flex gap-2">
-                          <input
-                            type="text"
-                            name="chefNote"
-                            placeholder={(order as any).chefNote || "Add a note for her..."}
-                            className="flex-1 text-xs px-3 py-2 border border-pink-100 rounded-lg focus:outline-none focus:border-secondary bg-white transition-colors"
-                          />
-                          <button type="submit" className="text-[10px] font-bold text-secondary bg-pink-50 hover:bg-pink-100 px-3 py-2 rounded-lg transition-colors flex-shrink-0">
-                            Save
-                          </button>
-                        </form>
-
-                        {/* Status Buttons */}
-                        <div className="flex gap-2 mt-auto">
-                          <form action={async () => { "use server"; await updateOrderStatus(order.id, "COOKING"); }} className="flex-1">
-                            <button className="w-full text-[11px] font-bold py-2 rounded-xl bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-100 transition-colors">
-                              Cooking
-                            </button>
-                          </form>
-                          <form action={async () => { "use server"; await updateOrderStatus(order.id, "READY"); }} className="flex-1">
-                            <button className="w-full text-[11px] font-bold py-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-100 transition-colors">
-                              Ready
-                            </button>
-                          </form>
-                          <form action={async () => { "use server"; await updateOrderStatus(order.id, "COMPLETED"); }} className="flex-1">
-                            <button className="w-full text-[11px] font-bold py-2 rounded-xl bg-secondary text-white hover:bg-pink-600 transition-colors">
-                              Done ✓
-                            </button>
-                          </form>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            <ChefActiveOrders initialOrders={activeOrders as any} />
           </div>
 
         </div>

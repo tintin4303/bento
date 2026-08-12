@@ -2,18 +2,24 @@
 
 import { useState } from "react";
 import { CheckCircle, XCircle } from "lucide-react";
+import { usePolling } from "@/hooks/usePolling";
 
 interface DishRequestInboxProps {
   pendingRequests: any[];
 }
 
-export function DishRequestInbox({ pendingRequests }: DishRequestInboxProps) {
-  const [filter, setFilter] = useState<"PENDING" | "ALL">("PENDING");
+export function DishRequestInbox({ pendingRequests: initialRequests }: DishRequestInboxProps) {
   const [replyNotes, setReplyNotes] = useState<Record<string, string>>({});
   const [responded, setResponded] = useState<Record<string, boolean>>({});
 
-  // Chef inbox fetches only pending — for ALL we'd need more data; flag for now
-  const visible = pendingRequests.filter(r => !responded[r.id]);
+  // Live polling — new guest requests appear instantly
+  const { pendingRequests } = usePolling(
+    "/api/chef/requests",
+    { pendingRequests: initialRequests },
+    3000
+  );
+
+  const visible = pendingRequests.filter((r: any) => !responded[r.id]);
 
   const handleRespond = async (id: string, status: "ACCEPTED" | "REJECTED") => {
     const { updateDishRequestStatus } = await import("@/app/actions/requests");

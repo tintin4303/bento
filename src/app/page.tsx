@@ -8,7 +8,6 @@ import { ProfileForm } from "@/components/ProfileForm";
 import { DishRequestForm } from "@/components/DishRequestForm";
 import { ConnectedChefProfile } from "@/components/ConnectedChefProfile";
 import { GuestDashboardClient } from "@/components/GuestDashboardClient";
-import { AutoRefresh } from "@/components/AutoRefresh";
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions);
@@ -104,7 +103,6 @@ export default async function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#FDF2F8]">
-      <AutoRefresh intervalMs={5000} />
 
       {/* ─── Sticky Nav ─── */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-pink-100">
