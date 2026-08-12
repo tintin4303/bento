@@ -88,15 +88,6 @@ export function ChefMenuClient({ initialItems }: ChefMenuClientProps) {
       />
     ) : (
       <div key={item.id} className={`bg-white rounded-2xl border border-pink-50 p-4 flex gap-3 items-start relative group ${isHidden ? 'opacity-60 grayscale' : 'shadow-sm'}`}>
-        
-        {/* Edit button */}
-        <button
-          onClick={() => setEditingItemId(item.id)}
-          className="absolute top-2 right-2 text-gray-300 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all z-10 p-1 bg-white rounded-md shadow-sm"
-          title="Edit dish"
-        >
-          <Edit2 size={14} />
-        </button>
 
         {item.imageUrl ? (
           <img src={item.imageUrl} alt={item.name} className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
@@ -124,18 +115,24 @@ export function ChefMenuClient({ initialItems }: ChefMenuClientProps) {
           </div>
         </div>
         <div className="flex flex-col gap-1.5 flex-shrink-0 ml-auto">
-          <button 
-            onClick={() => handleToggle(item.id, isHidden)}
-            className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors w-full ${isHidden ? 'text-secondary bg-pink-50 hover:bg-pink-100' : 'text-gray-500 bg-gray-100 hover:bg-gray-200'}`}
-          >
-            {isHidden ? 'Show' : 'Hide'}
-          </button>
-          <button 
-            onClick={() => handleDelete(item.id, item.imageUrl)}
-            className="text-[10px] font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg transition-colors w-full"
-          >
-            Delete
-          </button>
+        <button 
+          onClick={() => handleToggle(item.id, isHidden)}
+          className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors w-full ${isHidden ? 'text-secondary bg-pink-50 hover:bg-pink-100' : 'text-gray-500 bg-gray-100 hover:bg-gray-200'}`}
+        >
+          {isHidden ? 'Show' : 'Hide'}
+        </button>
+        <button 
+          onClick={() => setEditingItemId(item.id)}
+          className="text-[10px] font-bold text-blue-500 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg transition-colors w-full"
+        >
+          Edit
+        </button>
+        <button 
+          onClick={() => handleDelete(item.id, item.imageUrl)}
+          className="text-[10px] font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg transition-colors w-full"
+        >
+          Delete
+        </button>
         </div>
       </div>
     )
