@@ -19,7 +19,7 @@ export default async function Dashboard() {
   const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
   if (!dbUser) redirect("/login");
 
-  const connectedChefId = user.connectedChefId;
+  const connectedChefId = dbUser.connectedChefId;
   const connectedChef = connectedChefId
     ? await prisma.user.findUnique({ where: { id: connectedChefId } })
     : null;
