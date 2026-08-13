@@ -12,7 +12,7 @@ export function FeedbackInbox({ recentReviews: initialReviews }: FeedbackInboxPr
   const { recentReviews } = usePolling(
     "/api/chef/reviews",
     { recentReviews: initialReviews },
-    10000
+    3000
   );
 
   return (

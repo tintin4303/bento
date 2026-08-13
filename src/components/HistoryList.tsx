@@ -11,9 +11,9 @@ interface HistoryListProps {
 
 export function HistoryList({ completedOrders: initialOrders }: HistoryListProps) {
   const { completedOrders } = usePolling(
-    "/api/orders",
+    "/api/guest/completed-orders",
     { completedOrders: initialOrders },
-    10000
+    3000
   );
 
   return (

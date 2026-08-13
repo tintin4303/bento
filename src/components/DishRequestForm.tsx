@@ -23,7 +23,7 @@ export function DishRequestForm({ initialDishRequests }: { initialDishRequests: 
   const { dishRequests } = usePolling(
     "/api/guest/dish-requests",
     { dishRequests: initialDishRequests },
-    10000
+    3000
   );
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {

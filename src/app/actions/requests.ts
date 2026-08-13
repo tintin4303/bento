@@ -8,7 +8,8 @@ export async function createDishRequest(formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!session || (session.user as any).role !== "USER") throw new Error("Unauthorized");
   const guestId = (session.user as any).id;
-  const connectedChefId = (session.user as any).connectedChefId;
+  const dbUser = await prisma.user.findUnique({ where: { id: guestId } });
+  const connectedChefId = dbUser?.connectedChefId;
 
   if (!connectedChefId) throw new Error("Not connected to a chef");
 

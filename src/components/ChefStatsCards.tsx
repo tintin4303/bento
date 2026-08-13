@@ -24,7 +24,7 @@ export function ChefStatsCards({
   const { pendingRequests } = usePolling(
     "/api/chef/requests",
     { pendingRequests: initialPendingRequests },
-    10000
+    3000
   );
 
   // Menu items don't poll, they rely on server revalidation on mutation
