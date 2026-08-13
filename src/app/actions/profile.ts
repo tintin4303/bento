@@ -63,7 +63,8 @@ export async function updateProfile(formData: FormData) {
 
 export async function connectChef(formData: FormData) {
   const userId = await getAuthenticatedUserId();
-  const chefCode = formData.get("chefCode") as string;
+  const rawChefCode = formData.get("chefCode") as string;
+  const chefCode = rawChefCode ? rawChefCode.trim().toUpperCase() : "";
   
   if (!chefCode) throw new Error("Chef Code is required.");
   

@@ -13,7 +13,8 @@ export async function registerUser(formData: FormData) {
   const role = formData.get("role") as "ADMIN" | "USER";
   const username = formData.get("username") as string;
   const password = formData.get("password") as string;
-  const chefCode = formData.get("chefCode") as string | null;
+  const rawChefCode = formData.get("chefCode") as string | null;
+  const chefCode = rawChefCode ? rawChefCode.trim().toUpperCase() : null;
 
   if (!username || !password || !role) {
     throw new Error("Missing fields");
